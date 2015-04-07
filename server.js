@@ -55,6 +55,10 @@ function getSummonerId(summonerName, serverName){
 }
 
 function newUserAdd(playerJsonData, serverName){
+	/*
+	Adds new user to db, or update's existing users summoner name (incase of name change)
+	*/
+
 	playerData = JSON.parse(playerJsonData);
 	// Gets the key needed to access user data
 	for (var key in playerData) {
@@ -68,7 +72,7 @@ function newUserAdd(playerJsonData, serverName){
 	summonerNameNew = playerData["name"];
 	summonerID = playerData["id"];
 	console.log("Name: " + summonerNameNew + ", ID: " + summonerID + ", Server: " + serverName);
-	// Check if we already have this user in the db
+	
 
 	var newUser= new userModel({
 		summonerId: summonerID,
@@ -78,9 +82,11 @@ function newUserAdd(playerJsonData, serverName){
 		lastMatchId: 25
 	});
 
-	newUser.save(function (err, newUser) {
+	// Will update or insert the user, depending if there already a new user or not
+	// update(conditions for update, what to update, updateorinsert: true, callback)
+	userModel.update({summonerId: summonerID, server: serverName}, {summonerName: summonerNameNew}, {upsert: true}, function (err, newUser) {
 	  if (err) return console.error(err);
-	  console.log("User Added");
+	  console.log("User Added/Updated");
 	});
 }
 
