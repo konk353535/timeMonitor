@@ -1,6 +1,8 @@
 var express = require('express')
 var app = express()
 
+app.use(express.static(__dirname + "/public"));
+
 // Request for API calls
 var request = require('request');
 
