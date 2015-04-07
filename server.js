@@ -164,6 +164,7 @@ function addGame(newMatchId, newDuration, newChampion, newPosition, serverName){
 		, champion :  newChampion
 		, position : newPosition
 		, server : serverName
+		, userId : newUserId
 	});
 
 	newGame.save(function (err, newGame) {
