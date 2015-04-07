@@ -117,5 +117,15 @@ function addGame(newMatchId, newDuration, newChampion, newPosition){
 	});
 }
 
+/*
+gameModel.find(function (err, gameData) {
+  // Error
+  if (err) return console.error(err);
+  gameData = gameData[0];
+  date = new Date(gameData["dateTime"]);
+  console.log(date.getTime());
+});
+*/
+
 app.listen(3000)
 console.log("Listening on port 3000");
