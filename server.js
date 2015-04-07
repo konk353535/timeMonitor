@@ -89,9 +89,13 @@ function newUserAdd(playerJsonData, serverName){
 	  console.log("User Added/Updated");
 	});
 }
-
+getUsersToUpdate();
 function getUsersToUpdate(){
 	// Will get a list of users who haven't had there match history read in the last 4 hours
+	userModel.find({updated: false}).sort({summonerId: 1}).exec(function (err, userData) {
+	  if (err) return console.error(err);
+	  console.log(userData);
+	});
 }
 
 app.listen(3000)
