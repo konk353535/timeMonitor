@@ -9,6 +9,7 @@ var GameSchema = mongoose.Schema({
   , champion :  { type: Number }
   , position : {type: Number}
   , server : {type: String}
+  , userId : [{type: ObjectId, ref: 'UserSchema'}]
   // top = pos 1, role 4
   // mid = pos 2, role 4
   // JG = pos 3
