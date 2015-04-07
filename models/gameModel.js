@@ -4,10 +4,11 @@ var mongoose = require("mongoose");
 // Define schema
 var GameSchema = mongoose.Schema({
     matchId  :  { type: Number, index: true}
-  , dateTime  :  { type: String}
+  , dateTime  :  { type: Date}
   , duration   :  { type: Number }
   , champion :  { type: Number }
   , position : {type: Number}
+  , server : {type: String}
   // top = pos 1, role 4
   // mid = pos 2, role 4
   // JG = pos 3
