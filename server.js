@@ -1,7 +1,11 @@
 var express = require('express')
 var app = express()
 
+// body Parser so we can read data sent from client
+var bodyParser = require('body-parser');
+
 app.use(express.static(__dirname + "/public"));
+app.use(bodyParser.json());
 
 // Request for API calls
 var request = require('request');
@@ -19,6 +23,11 @@ db.once('open', function (callback) {
 app.get('/', function (req, res) {
   res.send('Hello World')
 })
+
+app.post('/newPlayer', function (req, res) {
+  console.log("Server Recieved " + req.body.name);
+  res.send("Roger that private, info recieved");
+});
  
 
 app.listen(3000)
