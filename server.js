@@ -25,7 +25,7 @@ app.get('/', function (req, res) {
 })
 
 app.post('/newPlayer', function (req, res) {
-  console.log("Server Recieved " + req.body.name);
+  console.log("Captain transmission recieved - Private Name - " + req.body.name + " - Battalion - "  + req.body.server);
   res.send("Roger that private, info recieved");
 });
  
