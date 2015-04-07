@@ -94,7 +94,7 @@ getUserToUpdate();
 
 function getUserToUpdate(){
 	// Will get a list of users who haven't had there match history read in the last 4 hours
-	userModel.find({updated: false}).sort({summonerId: 1}).limit(1).exec(function (err, userData) {
+	userModel.find({updated: false}).sort({summonerId: -1}).limit(1).exec(function (err, userData) {
 	  if (err) return console.error(err);
 	  // Got the user data commander!
 	  // Lets remove him from the array, so we can use him like an object
@@ -111,18 +111,46 @@ function scanUserGames(user){
 	*/
 	summonerId = user.summonerId;
 	serverName = user.server;
-
 	// Request last 10 games
 	request('https://' + serverName + '.api.pvp.net/api/lol/' + serverName + '/v1.3/game/by-summoner/' + summonerId + '/recent?api_key=' + config.apikey , 
 	function (error, response, body) {
 		if (!error && response.statusCode == 200) {
 			console.log("Data Recievied");
+			analyzeGames(user, JSON.parse(response.body));
 		}
 		else {
 			console.log("Invalid Summoner Name or Server");
 		}
 	});
-	
+}
+
+function analyzeGames(user, gamesData){
+	lastMatchId = user.lastMatchId;
+	// So we can update the last match id of the player later
+	currentMaxMatchId = 0;
+	gamesData = gamesData.games;
+	gamesData.forEach(function(game){
+		// To make sure we're only using new games (that we haven't added to DB)
+		if(game.gameId > lastMatchId){
+			console.log(game.gameId + " > " + lastMatchId);
+			matchId = game.gameId;
+			stats = game.stats;
+			timePlayed = stats.timePlayed;
+			champion = game.championId;
+
+			position = stats.playerPosition;
+			if(position === undefined){
+				position = 0;
+			}
+			console.log("Game Duration " + timePlayed/60 + "m");
+			console.log("Position: " + position);
+			console.log("Champion: " + champion);
+			console.log("Match Id: " + matchId);
+		}
+		else {
+			console.log(game.gameId + " < " + lastMatchId);
+		}
+	});
 }
 
 function addGame(newMatchId, newDuration, newChampion, newPosition, serverName){
