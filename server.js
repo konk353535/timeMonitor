@@ -98,7 +98,7 @@ function getUsersToUpdate(){
 	});
 }
 
-function addGame(newMatchId, newDuration, newChampion, newPosition){
+function addGame(newMatchId, newDuration, newChampion, newPosition, serverName){
 	/*
 	Given data will add game to db
 	*/
@@ -108,6 +108,7 @@ function addGame(newMatchId, newDuration, newChampion, newPosition){
 		, duration   :   newDuration
 		, champion :  newChampion
 		, position : newPosition
+		, server : serverName
 	});
 
 	newGame.save(function (err, newGame) {
