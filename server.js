@@ -104,6 +104,27 @@ function getUserToUpdate(){
 	});	
 }
 
+
+function scanUserGames(user){
+	/*
+	Make request for specified user's match history (using game v1.3 API)
+	*/
+	summonerId = user.summonerId;
+	serverName = user.server;
+
+	// Request last 10 games
+	request('https://' + serverName + '.api.pvp.net/api/lol/' + serverName + '/v1.3/game/by-summoner/' + summonerId + '/recent?api_key=' + config.apikey , 
+	function (error, response, body) {
+		if (!error && response.statusCode == 200) {
+			console.log("Data Recievied");
+		}
+		else {
+			console.log("Invalid Summoner Name or Server");
+		}
+	});
+	
+}
+
 function addGame(newMatchId, newDuration, newChampion, newPosition, serverName){
 	/*
 	Given data will add game to db
