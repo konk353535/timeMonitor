@@ -50,10 +50,20 @@ function getSummonerId(summonerName, serverName){
 }
 
 function newUserAdd(playerJsonData, serverName){
-	playerData = playerJsonData[0];
+	playerData = JSON.parse(playerJsonData);
+	// Gets the key needed to access user data
+	for (var key in playerData) {
+	  if (playerData.hasOwnProperty(key)) {
+	    playerKey = key;
+	  }
+	}
+	// Gets user data from JSON object using key
+	playerData = playerData[playerKey];
+
 	summonerName = playerData["name"];
 	summonerID = playerData["id"];
 	console.log("Name: " + summonerName + ", ID: " + summonerID + ", Server: " + serverName);
 }
+
 app.listen(3000)
 console.log("Listening on port 3000");
