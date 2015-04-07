@@ -15,7 +15,7 @@ var request = require('request');
 
 // Require Mongoose DB
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/champions');
+mongoose.connect('mongodb://localhost/timeMonitor');
 // Connect to Mongoose DB
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
@@ -23,6 +23,21 @@ db.once('open', function (callback) {
 	console.log("Connected to MongoDB");
 });
  
+// Mongoose User Schema
+// Define schema
+var UserSchema = mongoose.Schema({
+    summonerId  :  { type: Number, index: true}
+  , server  :  { type: String}
+  , summonerName   :  { type: String }
+  , updated :  { type: Boolean, default: false }
+  , lastMatchId : { type:Number}
+});
+
+var userModel = mongoose.model('users', UserSchema);
+
+
+
+
 app.get('/', function (req, res) {
 	res.send('Hello World')
 })
@@ -60,9 +75,23 @@ function newUserAdd(playerJsonData, serverName){
 	// Gets user data from JSON object using key
 	playerData = playerData[playerKey];
 
-	summonerName = playerData["name"];
+	summonerNameNew = playerData["name"];
 	summonerID = playerData["id"];
-	console.log("Name: " + summonerName + ", ID: " + summonerID + ", Server: " + serverName);
+	console.log("Name: " + summonerNameNew + ", ID: " + summonerID + ", Server: " + serverName);
+	// Check if we already have this user in the db
+	
+	var newUser= new userModel({
+		summonerId: summonerID,
+		server: serverName,
+		summonerName: summonerNameNew,
+		updated: false,
+		lastMatchId: 25
+	});
+
+	newUser.save(function (err, newUser) {
+	  if (err) return console.error(err);
+	  console.log("User Added");
+	});
 }
 
 app.listen(3000)
