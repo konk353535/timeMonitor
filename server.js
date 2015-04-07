@@ -23,17 +23,7 @@ db.once('open', function (callback) {
 	console.log("Connected to MongoDB");
 });
  
-// Mongoose User Schema
-// Define schema
-var UserSchema = mongoose.Schema({
-    summonerId  :  { type: Number, index: true}
-  , server  :  { type: String}
-  , summonerName   :  { type: String }
-  , updated :  { type: Boolean, default: false }
-  , lastMatchId : { type:Number}
-});
-
-var userModel = mongoose.model('users', UserSchema);
+var userModel = require("./models/userModel.js").userModel;
 
 
 
@@ -79,7 +69,7 @@ function newUserAdd(playerJsonData, serverName){
 	summonerID = playerData["id"];
 	console.log("Name: " + summonerNameNew + ", ID: " + summonerID + ", Server: " + serverName);
 	// Check if we already have this user in the db
-	
+
 	var newUser= new userModel({
 		summonerId: summonerID,
 		server: serverName,
