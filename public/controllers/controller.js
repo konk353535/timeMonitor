@@ -8,6 +8,9 @@ $scope.player = {server: "oce", name: ""};
 $scope.addContact = function(){
 	console.log($scope.player.name);
 	console.log($scope.player.server);
+	$http.post('/newPlayer', $scope.player).success(function(response){
+		console.log(response);
+	});
 };
 
 
