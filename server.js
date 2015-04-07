@@ -98,5 +98,24 @@ function getUsersToUpdate(){
 	});
 }
 
+function addGame(newMatchId, newDuration, newChampion, newPosition){
+	/*
+	Given data will add game to db
+	*/
+	var newGame = new gameModel({
+		  matchId: newMatchId
+		, dateTime  :  new Date()
+		, duration   :   newDuration
+		, champion :  newChampion
+		, position : newPosition
+	});
+
+	newGame.save(function (err, newGame) {
+		if (err) return console.error(err);
+		// Successfully added game to db
+		console.log("New Game Added");
+	});
+}
+
 app.listen(3000)
 console.log("Listening on port 3000");
