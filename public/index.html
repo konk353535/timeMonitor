@@ -14,7 +14,17 @@
     <h1>Template App</h1>
 
 
-          <input class="form-control" ng-model="contact.name">
+          
+          <div class="form-group">
+          <input class="form-control" ng-model="player.name" placeholder="Summoner Name">
+            <select class="form-control" ng-model="player.server">
+              <option value="oce" selected>OCE</option>
+              <option value="na">NA</option>
+              <option value="eue">EUE</option>
+              <option value="EUW">EUW</option>
+            </select>
+          </div> 
+
           <td><button class="btn btn-primary" ng-click="addContact()">Add Name</button></td>
          
 
