@@ -29,6 +29,7 @@ app.get('/', function (req, res) {
 
 app.post('/newPlayer', function (req, res) {
   console.log("Captain transmission recieved - Private Name - " + req.body.name + " - Battalion - "  + req.body.server);
+  getSummonerId(req.body.name, req.body.server);
   res.send("Roger that private, info recieved");
 });
 
@@ -37,11 +38,9 @@ app.post('/newPlayer', function (req, res) {
 
  function getSummonerId(summonerName, serverName){
 	// Request Games From Dev Challenge End Point
-	request('https://oce.api.pvp.net/api/lol/oce/v4.1/game/ids?beginDate=' + epoch_timer + '&api_key=' + config.apikey , function (error, response, body) {
+	request('https://' + serverName + '.api.pvp.net/api/lol/' + serverName + '/v1.4/summoner/by-name/' + summonerName + '?api_key=' + config.apikey , function (error, response, body) {
 		if (!error && response.statusCode == 200) {
 			console.log(body);
-			// Once game list recieved, pass to game handler
-			Game_Manager(null, body, Game_Extractor);
 		}
 	});
  }
