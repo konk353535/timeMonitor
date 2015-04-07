@@ -90,5 +90,9 @@ function newUserAdd(playerJsonData, serverName){
 	});
 }
 
+function getUsersToUpdate(){
+	// Will get a list of users who haven't had there match history read in the last 4 hours
+}
+
 app.listen(3000)
 console.log("Listening on port 3000");
