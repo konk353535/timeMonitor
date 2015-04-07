@@ -133,15 +133,22 @@ function analyzeGames(user, gamesData){
 		// To make sure we're only using new games (that we haven't added to DB)
 		if(game.gameId > lastMatchId){
 			console.log(game.gameId + " > " + lastMatchId);
-			matchId = game.gameId;
 			stats = game.stats;
+
+			matchId = game.gameId;
 			timePlayed = stats.timePlayed;
 			champion = game.championId;
-
 			position = stats.playerPosition;
+			dateCreated = game.createDate;
 			if(position === undefined){
 				position = 0;
 			}
+
+			if(currentMaxMatchId < matchId){
+				currentMaxMatchId = matchId;
+			}
+
+			addGame(user, matchId, timePlayed, champion, position, dateCreated)
 			console.log("Game Duration " + timePlayed/60 + "m");
 			console.log("Position: " + position);
 			console.log("Champion: " + champion);
@@ -151,20 +158,22 @@ function analyzeGames(user, gamesData){
 			console.log(game.gameId + " < " + lastMatchId);
 		}
 	});
+	// Update last match id
+	console.log("Last game played - " + currentMaxMatchId);
 }
 
-function addGame(newMatchId, newDuration, newChampion, newPosition, serverName){
+function addGame(user, newMatchId, newDuration, newChampion, newPosition, dateCreated){
 	/*
 	Given data will add game to db
 	*/
 	var newGame = new gameModel({
 		  matchId: newMatchId
-		, dateTime  :  new Date()
+		, dateTime  :  new Date(dateCreated)
 		, duration   :   newDuration
 		, champion :  newChampion
 		, position : newPosition
-		, server : serverName
-		, userId : newUserId
+		, server : user.server
+		, userId : user._id
 	});
 
 	newGame.save(function (err, newGame) {
