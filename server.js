@@ -41,6 +41,7 @@ function getSummonerId(summonerName, serverName){
 	request('https://' + serverName + '.api.pvp.net/api/lol/' + serverName + '/v1.4/summoner/by-name/' + summonerName + '?api_key=' + config.apikey , function (error, response, body) {
 		if (!error && response.statusCode == 200) {
 			console.log("Data Recievied");
+			newUserAdd(response.body, serverName);
 		}
 		else {
 			console.log("Invalid Summoner Name or Server");
@@ -48,5 +49,11 @@ function getSummonerId(summonerName, serverName){
 	});
 }
 
+function newUserAdd(playerJsonData, serverName){
+	playerData = playerJsonData[0];
+	summonerName = playerData["name"];
+	summonerID = playerData["id"];
+	console.log("Name: " + summonerName + ", ID: " + summonerID + ", Server: " + serverName);
+}
 app.listen(3000)
 console.log("Listening on port 3000");
