@@ -24,7 +24,7 @@ db.once('open', function (callback) {
 });
  
 var userModel = require("./models/userModel.js").userModel;
-
+var gameModel = require("./models/gameModel.js").gameModel;
 
 
 
