@@ -77,14 +77,18 @@ function newUserAdd(playerJsonData, serverName){
 	var newUser= new userModel({
 		summonerId: summonerID,
 		server: serverName,
-		summonerName: summonerNameNew,
 		updated: false,
-		lastMatchId: 25
+		lastMatchId: 25,
+		summonerName: summonerNameNew
 	});
+	// Because we need newUser clone without the ID, (for updating)
+	var upsertData = newUser.toObject();
+	delete upsertData._id
 
+	console.log("Sup");
 	// Will update or insert the user, depending if there already a new user or not
 	// update(conditions for update, what to update, updateorinsert: true, callback)
-	userModel.update({summonerId: summonerID, server: serverName}, {summonerName: summonerNameNew}, {upsert: true}, function (err, newUser) {
+	userModel.update({summonerId: summonerID, server: serverName}, upsertData, {upsert: true}, function (err, newUser) {
 	  if (err) return console.error(err);
 	  console.log("User Added/Updated");
 	});
@@ -159,7 +163,18 @@ function analyzeGames(user, gamesData){
 		}
 	});
 	// Update last match id
-	console.log("Last game played - " + currentMaxMatchId);
+	if(currentMaxMatchId > 0){
+		console.log("Last game played - " + currentMaxMatchId);
+		userModel.update({"_id":  user._id}, { lastMatchId: currentMaxMatchId}, function(err, newInfo){
+			if(err) return handleError(err);
+			console.log("maxMatchId Updated");
+		});
+	}
+	// Change updated status, so we know we've scanned this user recently 
+	userModel.update({"_id":  user._id}, { updated: true}, function(err, newInfo){
+		if(err) return handleError(err);
+		console.log("User Fully Updated");
+	});
 }
 
 function addGame(user, newMatchId, newDuration, newChampion, newPosition, dateCreated){
