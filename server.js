@@ -89,13 +89,19 @@ function newUserAdd(playerJsonData, serverName){
 	  console.log("User Added/Updated");
 	});
 }
-getUsersToUpdate();
-function getUsersToUpdate(){
+
+getUserToUpdate();
+
+function getUserToUpdate(){
 	// Will get a list of users who haven't had there match history read in the last 4 hours
-	userModel.find({updated: false}).sort({summonerId: 1}).exec(function (err, userData) {
+	userModel.find({updated: false}).sort({summonerId: 1}).limit(1).exec(function (err, userData) {
 	  if (err) return console.error(err);
-	  console.log(userData);
-	});
+	  // Got the user data commander!
+	  // Lets remove him from the array, so we can use him like an object
+	  user = userData[0];
+	  scanUserGames(user);
+
+	});	
 }
 
 function addGame(newMatchId, newDuration, newChampion, newPosition, serverName){
