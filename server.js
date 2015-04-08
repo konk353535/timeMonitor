@@ -26,6 +26,8 @@ db.once('open', function (callback) {
 var userModel = require("./models/userModel.js").userModel;
 var gameModel = require("./models/gameModel.js").gameModel;
 
+var userUpdateManager = require("./userUpdateManager.js");
+var userAddManager = require("./userAddManager.js");
 
 
 app.get('/', function (req, res) {
@@ -34,170 +36,14 @@ app.get('/', function (req, res) {
 
 app.post('/newPlayer', function (req, res) {
 	console.log("Captain transmission recieved - Private Name - " + req.body.name + " - Battalion - "  + req.body.server);
-	getSummonerId(req.body.name, req.body.server);
+	userAddManager.addUser(req.body.name, req.body.server);
 	res.send("Roger that private, info recieved");
 });
 
-// New function takes Summoner_Name + Server_Name
-// Returns Summoner_ID or err
+// gameManager to handle updating game functions
+// userManager to handle new user functions
 
-function getSummonerId(summonerName, serverName){
-	// Request Summoner ID
-	request('https://' + serverName + '.api.pvp.net/api/lol/' + serverName + '/v1.4/summoner/by-name/' + summonerName + '?api_key=' + config.apikey , function (error, response, body) {
-		if (!error && response.statusCode == 200) {
-			console.log("Data Recievied");
-			newUserAdd(response.body, serverName);
-		}
-		else {
-			console.log("Invalid Summoner Name or Server");
-		}
-	});
-}
-
-function newUserAdd(playerJsonData, serverName){
-	/*
-	Adds new user to db, or update's existing users summoner name (incase of name change)
-	*/
-
-	playerData = JSON.parse(playerJsonData);
-	// Gets the key needed to access user data
-	for (var key in playerData) {
-	  if (playerData.hasOwnProperty(key)) {
-	    playerKey = key;
-	  }
-	}
-	// Gets user data from JSON object using key
-	playerData = playerData[playerKey];
-
-	summonerNameNew = playerData["name"];
-	summonerID = playerData["id"];
-	console.log("Name: " + summonerNameNew + ", ID: " + summonerID + ", Server: " + serverName);
-	
-
-	var newUser= new userModel({
-		summonerId: summonerID,
-		server: serverName,
-		updated: false,
-		lastMatchId: 25,
-		summonerName: summonerNameNew
-	});
-	// Because we need newUser clone without the ID, (for updating)
-	var upsertData = newUser.toObject();
-	delete upsertData._id
-
-	console.log("Sup");
-	// Will update or insert the user, depending if there already a new user or not
-	// update(conditions for update, what to update, updateorinsert: true, callback)
-	userModel.update({summonerId: summonerID, server: serverName}, upsertData, {upsert: true}, function (err, newUser) {
-	  if (err) return console.error(err);
-	  console.log("User Added/Updated");
-	});
-}
-
-getUserToUpdate();
-
-function getUserToUpdate(){
-	// Will get a list of users who haven't had there match history read in the last 4 hours
-	userModel.find({updated: false}).sort({summonerId: -1}).limit(1).exec(function (err, userData) {
-	  if (err) return console.error(err);
-	  // Got the user data commander!
-	  // Lets remove him from the array, so we can use him like an object
-	  user = userData[0];
-	  scanUserGames(user);
-
-	});	
-}
-
-
-function scanUserGames(user){
-	/*
-	Make request for specified user's match history (using game v1.3 API)
-	*/
-	summonerId = user.summonerId;
-	serverName = user.server;
-	// Request last 10 games
-	request('https://' + serverName + '.api.pvp.net/api/lol/' + serverName + '/v1.3/game/by-summoner/' + summonerId + '/recent?api_key=' + config.apikey , 
-	function (error, response, body) {
-		if (!error && response.statusCode == 200) {
-			console.log("Data Recievied");
-			analyzeGames(user, JSON.parse(response.body));
-		}
-		else {
-			console.log("Invalid Summoner Name or Server");
-		}
-	});
-}
-
-function analyzeGames(user, gamesData){
-	lastMatchId = user.lastMatchId;
-	// So we can update the last match id of the player later
-	currentMaxMatchId = 0;
-	gamesData = gamesData.games;
-	gamesData.forEach(function(game){
-		// To make sure we're only using new games (that we haven't added to DB)
-		if(game.gameId > lastMatchId){
-			console.log(game.gameId + " > " + lastMatchId);
-			stats = game.stats;
-
-			matchId = game.gameId;
-			timePlayed = stats.timePlayed;
-			champion = game.championId;
-			position = stats.playerPosition;
-			dateCreated = game.createDate;
-			if(position === undefined){
-				position = 0;
-			}
-
-			if(currentMaxMatchId < matchId){
-				currentMaxMatchId = matchId;
-			}
-
-			addGame(user, matchId, timePlayed, champion, position, dateCreated)
-			console.log("Game Duration " + timePlayed/60 + "m");
-			console.log("Position: " + position);
-			console.log("Champion: " + champion);
-			console.log("Match Id: " + matchId);
-		}
-		else {
-			console.log(game.gameId + " < " + lastMatchId);
-		}
-	});
-	// Update last match id
-	if(currentMaxMatchId > 0){
-		console.log("Last game played - " + currentMaxMatchId);
-		userModel.update({"_id":  user._id}, { lastMatchId: currentMaxMatchId}, function(err, newInfo){
-			if(err) return handleError(err);
-			console.log("maxMatchId Updated");
-		});
-	}
-	// Change updated status, so we know we've scanned this user recently 
-	userModel.update({"_id":  user._id}, { updated: true}, function(err, newInfo){
-		if(err) return handleError(err);
-		console.log("User Fully Updated");
-	});
-}
-
-function addGame(user, newMatchId, newDuration, newChampion, newPosition, dateCreated){
-	/*
-	Given data will add game to db
-	*/
-	var newGame = new gameModel({
-		  matchId: newMatchId
-		, dateTime  :  new Date(dateCreated)
-		, duration   :   newDuration
-		, champion :  newChampion
-		, position : newPosition
-		, server : user.server
-		, userId : user._id
-	});
-
-	newGame.save(function (err, newGame) {
-		if (err) return console.error(err);
-		// Successfully added game to db
-		console.log("New Game Added");
-	});
-}
-
+userUpdateManager.updateUser();
 /*
 gameModel.find(function (err, gameData) {
   // Error
