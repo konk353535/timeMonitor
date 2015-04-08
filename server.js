@@ -40,10 +40,12 @@ app.post('/newPlayer', function (req, res) {
 	res.send("Roger that private, info recieved");
 });
 
-// gameManager to handle updating game functions
-// userManager to handle new user functions
 
-userUpdateManager.updateUser();
+// Resets all users update status
+//userUpdateManager.resetAllUsers();
+
+// Updates a single users match history
+//userUpdateManager.updateUser();
 /*
 gameModel.find(function (err, gameData) {
   // Error
