@@ -1,18 +1,15 @@
 // Config file for apiKey ect
 var config = require('./config/config');
-
+// Express
 var express = require('express')
 var app = express()
-
 // body Parser so we can read data sent from client
 var bodyParser = require('body-parser');
-
+// Define where to pull front end docs from
 app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.json());
-
 // Request for API calls
 var request = require('request');
-
 // Require Mongoose DB
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/timeMonitor');
@@ -22,11 +19,14 @@ db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function (callback) {
 	console.log("Connected to MongoDB");
 });
- 
-var userModel = require("./models/userModel.js").userModel;
-var gameModel = require("./models/gameModel.js").gameModel;
 
-var userUpdateManager = require("./userUpdateManager.js");
+// Cron manager to reset users every 4 hours
+// Update a user every 5 minutes
+var cronManager = require("./cronManager.js");
+ 
+//var userModel = require("./models/userModel.js").userModel;
+//var gameModel = require("./models/gameModel.js").gameModel;
+
 var userAddManager = require("./userAddManager.js");
 
 
@@ -41,11 +41,6 @@ app.post('/newPlayer', function (req, res) {
 });
 
 
-// Resets all users update status
-//userUpdateManager.resetAllUsers();
-
-// Updates a single users match history
-//userUpdateManager.updateUser();
 /*
 gameModel.find(function (err, gameData) {
   // Error
