@@ -110,8 +110,18 @@ function addGame(user, newMatchId, newDuration, newChampion, newPosition, dateCr
 	});
 }
 
+var resetAllUsers = function resetAllUsers(){
+	/*
+	Resets all users updated field to false
+	*/
+	userModel.update({}, {updated: false}, {multi: true}, function (err, numAffected) {
+	  if (err) return console.error(err);
+	  console.log("Reset Users Updated Field");
+	});
+}	
 
 
 module.exports = {
-	updateUser: updateUser
+	updateUser: updateUser,
+	resetAllUsers: resetAllUsers
 }
