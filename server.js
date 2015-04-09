@@ -23,15 +23,20 @@ db.once('open', function (callback) {
 // Cron manager to reset users every 4 hours
 // Update a user every 5 minutes
 var cronManager = require("./cronManager.js");
- 
-//var userModel = require("./models/userModel.js").userModel;
-//var gameModel = require("./models/gameModel.js").gameModel;
 
 var userAddManager = require("./userAddManager.js");
 
 
 app.get('/', function (req, res) {
-	res.send('Hello World')
+	res.send('Hello World');
+})
+
+app.get('/graph', function(req,res){
+	var graphManager = require('./graphManager.js');
+	var graphManagerOne = graphManager;
+
+	// send res object to manager to call when needed
+	graphManagerOne.getGraph("iyvy", "oce", "24hours", res);
 })
 
 app.post('/newPlayer', function (req, res) {
@@ -41,15 +46,6 @@ app.post('/newPlayer', function (req, res) {
 });
 
 
-/*
-gameModel.find(function (err, gameData) {
-  // Error
-  if (err) return console.error(err);
-  gameData = gameData[0];
-  date = new Date(gameData["dateTime"]);
-  console.log(date.getTime());
-});
-*/
 
 app.listen(3000)
 console.log("Listening on port 3000");
