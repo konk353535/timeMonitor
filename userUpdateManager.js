@@ -6,6 +6,9 @@ var request = require('request');
 // Models for DB interaction
 var userModel = require("./models/userModel.js").userModel;
 var gameModel = require("./models/gameModel.js").gameModel;
+// Converting to UTC
+var moment = require('moment-timezone');
+
 
 // Update User Games Functions
 var updateUser = function getUserToUpdate(){
@@ -35,7 +38,7 @@ function scanUserGames(user){
 	request('https://' + serverName + '.api.pvp.net/api/lol/' + serverName + '/v1.3/game/by-summoner/' + summonerId + '/recent?api_key=' + config.apikey , 
 	function (error, response, body) {
 		if (!error && response.statusCode == 200) {
-			console.log("Data Recievied");
+			console.log("Data Recievied - " + user.name);
 			analyzeGames(user, JSON.parse(response.body));
 		}
 		else {
@@ -93,9 +96,13 @@ function addGame(user, newMatchId, newDuration, newChampion, newPosition, dateCr
 	/*
 	Given data will add game to db
 	*/
+
+	// Format date so that it is UTC timezone
+	var dateCreatedUtc = moment.tz(dateCreated, "UTC").format());
+
 	var newGame = new gameModel({
 		  matchId: newMatchId
-		, dateTime  :  new Date(dateCreated)
+		, dateTime  :  dateCreatedUtc
 		, duration   :   newDuration
 		, champion :  newChampion
 		, position : newPosition
