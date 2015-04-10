@@ -3,15 +3,20 @@ var userModel = require("./models/userModel.js").userModel;
 var gameModel = require("./models/gameModel.js").gameModel;
 
 var responder;
+var offSet;
 
-var getGraph = function getGraph(userName, serverName, graphName, res){
+var moment = require('moment');
+
+var getGraph = function getGraph(userName, serverName, graphName, timeZoneOffSet, res){
 	/*
 	Given user name, server and GRAPH name
 	Will pass information on to appropriate grapher
 	*/
 	responder = res;
-	if(graphName == "24hours"){
-		getUserAndGraph(userName, serverName, getPlayerGames24);
+	offSet = timeZoneOffSet;
+
+	if(graphName == "today"){
+		getUserAndGraph(userName, serverName, todayGraph);
 	}
 	else {
 		console.log("Error incorrect graph name specified for getGraph(user, server, graphName, res)");
@@ -35,24 +40,39 @@ function getUserAndGraph(userName, serverName, graphFunctionName){
 		}
 	});	
 }
-function getPlayerGames24(userData){
+function todayGraph(userData){
 	/*
-	Given a user, will get all the games they have played in the last 24 hours
+	Given a user, will get all the games they have played today (in there timezone)
 	*/
-	console.log("Private give me " + userData._id + " games in the last 24 hours!");
-	// current datetime
-	var now = new Date();
-	// date time 24 hours ago
-	var yesterday = new Date();
-	yesterday.setHours(yesterday.getHours() - 24);
+	console.log("Private give me " + userData._id + " games today!");
 
-	gameModel.find({$and: [{"userId":userData._id}, {dateTime: {$gt: yesterday, $lt: now}}]}).sort({dateTime: -1}).exec(function (err, res){
+	// Step One: Get current time in UTC
+	var now = moment();
+	var currentDateClient = now.utcOffset(offSet*-1);
+
+	var todayFirstMin = currentDateClient;
+	todayFirstMin = moment(todayFirstMin).seconds(00);
+	todayFirstMin = moment(todayFirstMin).minutes(00);
+	todayFirstMin = moment(todayFirstMin).hours(00);
+	// convert to javascript date for comparison in mongodb
+	todayFirstMin = moment(todayFirstMin).toDate();
+
+	var todayLastMin = currentDateClient;
+	todayLastMin = moment(todayLastMin).seconds(59);
+	todayLastMin = moment(todayLastMin).minutes(59);
+	todayLastMin = moment(todayLastMin).hours(23);
+	// convert to javascript date for comparison in mongodb
+	todayLastMin = moment(todayLastMin).toDate();
+	
+	console.log("Today for client in UTC - " + todayFirstMin + " - " + todayLastMin);
+
+	gameModel.find({$and: [{"userId":userData._id}, {dateTime: {$gt: todayFirstMin, $lt: todayLastMin}}]}).sort({dateTime: -1}).exec(function (err, res){
 		if(err) return console.log(err);
-		analyzePlayerGames24(userData, res, now);
+		analyzeGamesTodayGraph(userData, res, now);
 	});
 	
 }
-function analyzePlayerGames24(userData, gameData, now){
+function analyzeGamesTodayGraph(userData, gameData, now){
 	/*
 	Given a list of games will slice them into each hour, so we can output to a graph
 	*/
@@ -68,11 +88,20 @@ function analyzePlayerGames24(userData, gameData, now){
 
 	// Iterate over each game and assign to array for graphing later
 	gameData.forEach(function(game){
-		console.log("Date - "  + game.dateTime);
-		var gameDate = game.dateTime;
-		var hoursAgo = Math.ceil(getHoursBetween(gameDate, now));
+		// Get time in UTC
+		var a = moment(game.dateTime);
+		
+		// Get time in clients timezone
+		var clientDate = {
+			utc: moment(a.utc()).format(),
+			offset: offSet
+		};
+		var clientDate2 = moment.utc(clientDate.utc).zone(clientDate.offset).toDate();
+			
+		var gameDate = clientDate2;
+		var hour = gameDate.getHours();
 		var duration = Math.round(game.duration / 60);
-		tempGraphData[hoursAgo-1] += duration;
+		tempGraphData[hour] += duration;
 	});
 
 	responder.send(tempGraphData);
