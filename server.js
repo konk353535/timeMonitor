@@ -31,12 +31,13 @@ app.get('/', function (req, res) {
 	res.send('Hello World');
 })
 
-app.get('/graph', function(req,res){
+app.post('/graph', function(req,res){
+
 	var graphManager = require('./graphManager.js');
 	var graphManagerOne = graphManager;
 
-	// send res object to manager to call when needed
-	graphManagerOne.getGraph("iyvy", "oce", "24hours", res);
+	// userName, serverName, graphName, clientTimeZoneOffSet, responder obj
+	graphManagerOne.getGraph("iyvy", "oce", "today", req.body.userOffSet, res);
 })
 
 app.post('/newPlayer', function (req, res) {
@@ -44,6 +45,7 @@ app.post('/newPlayer', function (req, res) {
 	userAddManager.addUser(req.body.name, req.body.server);
 	res.send("Roger that private, info recieved");
 });
+
 
 
 
