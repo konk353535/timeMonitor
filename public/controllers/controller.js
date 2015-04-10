@@ -1,4 +1,5 @@
-var myApp = angular.module('myApp', []);
+var myApp = angular.module('myApp', ["chart.js"]);
+
 myApp.controller('AppCtrl', ['$scope', '$http', function($scope, $http) {
 
 // Set default select value to oce
@@ -12,12 +13,5 @@ $scope.addContact = function(){
 		console.log(response);
 	});
 };
-
-
-
-
-
-
-
-
 }]);
+
