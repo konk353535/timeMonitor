@@ -36,7 +36,6 @@ var getGraph = function getGraph(userName, serverName, graphOptions,  responder)
 		console.log("Error incorrect graph name specified for getGraph(user, server, graphName, res)");
 	}
 }
-
 function getUserThenGraph(userName, serverName, graphOptions, graphFunctionName, responder){
 	/*
 	Gets id for user from userName and server
@@ -57,6 +56,8 @@ function getUserThenGraph(userName, serverName, graphOptions, graphFunctionName,
 		}
 	});	
 }
+
+// Champion Pie Graph Functions (In Development)
 function championDaysGraph(err, userData, graphOptions, responder){
 	/*
 	Retrives games by user, between dates given
@@ -99,6 +100,7 @@ function analyzeChampionDaysGraph(err, gameData, userData, responder){
 
 }
 
+// Days Graph Functions
 function daysGraph(err, userData, graphOptions, responder){
 	/*
 	Retrives games by user, between dates given
@@ -175,6 +177,7 @@ function analyzeGamesDaysGraph(err, gameData, userData, startDate, endDate, resp
 	responder.send(graphInfo);
 }
 
+// Today Graph Functions 
 function todayGraph(err, userData, graphOptions, responder){
 	/*
 	Given a user, will get all the games they have played today (in there timezone)
@@ -203,8 +206,7 @@ function todayGraph(err, userData, graphOptions, responder){
 	gameModel.find({$and: [{"userId":userData._id}, {dateTime: {$gt: todayFirstMin, $lt: todayLastMin}}]}).sort({dateTime: -1}).exec(function (err, res){
 		if(err) return console.log(err);
 		analyzeGamesTodayGraph(userData, res, responder);
-	});
-	
+	});	
 }
 function analyzeGamesTodayGraph(userData, gameData, responder){
 	/*
@@ -235,6 +237,7 @@ function analyzeGamesTodayGraph(userData, gameData, responder){
 
 	responder.send(tempGraphData);
 }
+
 function getHoursBetween(dateOne,dateTwo){
 	/*
 	Gets hours between two date objects
