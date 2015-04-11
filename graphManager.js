@@ -103,19 +103,14 @@ function daysGraph(err, userData, graphOptions, responder){
 	/*
 	Retrives games by user, between dates given
 	*/
-	// Date From -> Date To graph (each day = one data point)
-
-	var now = moment().utcOffset(offSet*-1);
 
 	// As date's are made by clientside, they are already specified to there timezone
 	var startDate = graphOptions.startDate;
 	var endDate = graphOptions.endDate;
 
-	console.log("--- Graph Type - daysGraph --- ");
-	console.log("Start Date ---> ---> " + startDate);
-	console.log("End Date ---> ---> " + endDate);
+	console.log("--- Graph Type - daysGraph --- sDate ->" + startDate + " eDate -> " + endDate);
 
-	// Query Mongo DB
+	// Query Mongo DB for all games between specified dates
 	gameModel.find({$and: [{"userId":userData._id}, {dateTime: {$gt: startDate, $lt: endDate}}]}).sort({dateTime: -1}).exec(function (err, res){
 		if(err) return console.log(err);
 		// Pass found games to analysis function
@@ -124,35 +119,43 @@ function daysGraph(err, userData, graphOptions, responder){
 }
 function analyzeGamesDaysGraph(err, gameData, userData, startDate, endDate, responder){
 	/*
-	Generates a data series (1 dp = 1 day)
+	Data Series (1 datapoint = 1 day)
 	Given dateFrom - dateTo &
-	User's information &
-	Game information between dates given
-	data = duration in minutes
+	User's info &
+	Game info for given dates
+	Data = sum mins grouped by day
 	*/
 	
-	// How many data points in graph
+	// Get # Datapoints in graph
 	var daysBetween = getHoursBetween(startDate, endDate) / 24;
-	console.log("Data points = " + daysBetween);
 
 	// Get startdate in clients timezone
 	var startDate = moment(startDate).utcOffset(offSet*-1);
-	// Log startdate in clients timezone
-	console.log(moment(startDate).format());
 
+	// Log startdate in clients timezone
+	console.log("Start date clients time zone - > " + moment(startDate).format());
+
+	// Example: Data = 70m, labels = 3rd April 
 	var tempGraphData = [];
 	var tempGraphLabels = [];
+
 	var tempDateLabel = startDate;
+	
+	// Initalise array of 0's for data
 	for(var i=0;i<daysBetween;i++){
 		tempGraphLabels.push(moment(tempDateLabel).format("MMM Do"));
+		// Step forward one day, to generate labels
 		tempDateLabel = moment(tempDateLabel).add(1, 'days');
 		tempGraphData.push(0);
 	}
 
 	gameData.forEach(function(game){
-		// Get time in UTC
+		// Loop over each game
+
+		// set game time to client's timezone
 		var a = moment(game.dateTime).utcOffset(offSet*-1);
 		
+		// Log game time in client's timezone
 		console.log(moment(a).format());
 		
 		// Get what datapoint this is (by getting how many days between this game and startDate)
@@ -160,12 +163,15 @@ function analyzeGamesDaysGraph(err, gameData, userData, startDate, endDate, resp
 
 		console.log("Data Point - " + daysFromStartDate);
 
+		// Log actual minutes to specified datapoint
 		var duration = Math.round(game.duration / 60);
 		tempGraphData[daysFromStartDate] += duration;
 	});
 
+	// Load label and data into json object
 	var graphInfo = {data: tempGraphData, labels: tempGraphLabels}
 	console.log(graphInfo);
+	// push object (label + data) to client
 	responder.send(graphInfo);
 }
 
