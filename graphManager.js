@@ -26,6 +26,7 @@ var getGraph = function getGraph(userName, serverName, graphOptions,  responder)
 	}
 	else if(graphOptions.graphType == "daysGraph"){
 		getUserThenGraph(userName, serverName, graphOptions, daysGraph, responder);
+		getUserThenGraph(userName, serverName, graphOptions, championDaysGraph, responder);
 	}
 	else if(graphOptions.graphType == "championDaysGraph"){
 		getUserThenGraph(userName, serverName, graphOptions, championDaysGraph, responder);
@@ -86,17 +87,28 @@ function analyzeChampionDaysGraph(err, gameData, userData, responder){
 	& user Data
 	returns list of how much each champion played
 	*/
-	var championNames = [];
+	var championIds = [];
+	var championGameCounts = [];
 
-	var championData = [];
+	gameData.forEach(function(game){
+		if(championIds.indexOf(game.champion) > -1){
+			var champIdIndex = championIds.indexOf(game.champion);
+			var duration = Math.round(game.duration / 60);
 
-	for(var i=0;i<championNames.length;i++){
-		championData.push(0);
-	}
+			championGameCounts[champIdIndex] += duration;
+		}
+		else {
+			championIds.push(game.champion);
 
-	gameData.forEach(function(game){		
-		championData[game.championId] += 1;
+			var champIdIndex = championIds.indexOf(game.champion);
+			var duration = Math.round(game.duration / 60);
+
+			championGameCounts[champIdIndex] = duration;
+		}
 	});
+
+	console.log(championIds);
+	console.log(championGameCounts);
 
 }
 
