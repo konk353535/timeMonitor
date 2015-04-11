@@ -1,15 +1,14 @@
-// Config file for apiKey ect
-var config = require('./config/config');
 // Express
 var express = require('express')
 var app = express()
+
 // body Parser so we can read data sent from client
 var bodyParser = require('body-parser');
+
 // Define where to pull front end docs from
 app.use(express.static(__dirname + "/public"));
 app.use(bodyParser.json());
-// Request for API calls
-var request = require('request');
+
 // Require Mongoose DB
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/timeMonitor');
@@ -20,10 +19,11 @@ db.once('open', function (callback) {
 	console.log("Connected to MongoDB");
 });
 
-// Cron manager to reset users every 4 hours
-// Update a user every 5 minutes
+// Cron manager to reset users every x hours/minutes
+// Cron manager to update user every x second/minutes
 var cronManager = require("./cronManager.js");
 
+// User add manager to handle new user posts
 var userAddManager = require("./userAddManager.js");
 
 
@@ -32,12 +32,10 @@ app.get('/', function (req, res) {
 })
 
 app.post('/graph', function(req,res){
-
 	var graphManager = require('./graphManager.js');
 	var graphManagerOne = graphManager;
-
-	// userName, serverName, graphName, clientTimeZoneOffSet, responder obj
-	graphManagerOne.getGraph("iyvy", "oce", "today", req.body.userOffSet, res);
+	// Req.body contains graphName, clientTimeZoneOffSet, dates
+	graphManagerOne.getGraph("iyvy", "oce", req.body, res);
 })
 
 app.post('/newPlayer', function (req, res) {
@@ -45,9 +43,6 @@ app.post('/newPlayer', function (req, res) {
 	userAddManager.addUser(req.body.name, req.body.server);
 	res.send("Roger that private, info recieved");
 });
-
-
-
 
 app.listen(3000)
 console.log("Listening on port 3000");
