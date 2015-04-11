@@ -39,12 +39,15 @@ var getGraph = function getGraph(userName, serverName, graphOptions,  responder)
 
 function getUserAndGraph(userName, serverName, graphOptions, graphFunctionName, responder){
 	/*
-	Gets unique id for user
+	Gets id for user from userName and server
 	Send's user to specified graph function
 	*/
+
+	// Query mongodb for user with name and server
 	userModel.findOne({"summonerName":userName, "server":serverName}).exec(function (err, userData) {
 		if (err) return console.error(err);
 		if(userData !== null){
+			// User Found
 			graphFunctionName(null, userData, graphOptions, responder);
 		}
 		else{	
