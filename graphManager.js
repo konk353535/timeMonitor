@@ -22,13 +22,13 @@ var getGraph = function getGraph(userName, serverName, graphOptions,  responder)
 
 	// Check what graph the client wants
 	if(graphOptions.graphType == "today"){
-		getUserAndGraph(userName, serverName, graphOptions, todayGraph, responder);
+		getUserThenGraph(userName, serverName, graphOptions, todayGraph, responder);
 	}
 	else if(graphOptions.graphType == "daysGraph"){
-		getUserAndGraph(userName, serverName, graphOptions, daysGraph, responder);
+		getUserThenGraph(userName, serverName, graphOptions, daysGraph, responder);
 	}
 	else if(graphOptions.graphType == "championDaysGraph"){
-		getUserAndGraph(userName, serverName, graphOptions, championDaysGraph, responder);
+		getUserThenGraph(userName, serverName, graphOptions, championDaysGraph, responder);
 	}
 	else {
 	// If client is asking for a graph we don't have, send error
@@ -37,7 +37,7 @@ var getGraph = function getGraph(userName, serverName, graphOptions,  responder)
 	}
 }
 
-function getUserAndGraph(userName, serverName, graphOptions, graphFunctionName, responder){
+function getUserThenGraph(userName, serverName, graphOptions, graphFunctionName, responder){
 	/*
 	Gets id for user from userName and server
 	Send's user to specified graph function
