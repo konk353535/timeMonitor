@@ -1,5 +1,5 @@
 <!DOCTYPE>
-<html ng-app="myApp">
+<html>
 <head>
 
 <link rel="stylesheet" href="angular-chart.css">
@@ -9,9 +9,10 @@
 <!-- Optional theme -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
 
-  <title>Template</title>
+<title>Template</title>
 </head>
 <body>
+<div ng-app="myApp">
   <div class="container" ng-controller="AppCtrl">
     <h1>Template App</h1>
 
@@ -28,28 +29,34 @@
     <td><button class="btn btn-primary" ng-click="addContact()">Add Name</button></td>
     
   </div>
-<div class="container">
-  <div class="row" ng-controller="todayChartCtrl">
-    <h3>Last 24 Hours</h3>
-    <td><button class="btn btn-primary" ng-click="getGraph()">Graph</button></td>
-    <div class="col-md-6">
-      <canvas id="line" class="chart chart-line" data="data"
-      labels="labels" legend="true" series="series" options="options"
-      click="onClick">
-      </canvas> 
-    </div>
-  </div>
 </div>
+  
+<div ng-app="myCharts" id="chartApp">
+  <div class="container" ng-controller="todayChartCtrl">
+    <div class="row" >
+      <h3>Last 24 Hours</h3>
+      <td><button class="btn btn-primary" ng-click="getGraph()">Graph</button></td>
+      <div class="col-md-6">
+        <canvas id="line" class="chart chart-line" data="data"
+        labels="labels" legend="true" series="series" options="options"
+        click="onClick">
+        </canvas> 
+      </div>
+    </div>
 
-<div class="container">
-  <div class="row" ng-controller="weekChartCtrl">
-    <h3>Last 7 Days</h3>
-    <td><button class="btn btn-primary" ng-click="getGraph()">Graph</button></td>
-    <div class="col-md-6">
-      <canvas id="line" class="chart chart-line" data="data"
-      labels="labels" legend="true" series="series" options="options"
-      click="onClick">
-      </canvas> 
+  </div>
+
+
+  <div class="container" ng-controller="weekChartCtrl">
+    <div class="row" >
+      <h3>Last 7 Days</h3>
+      <td><button class="btn btn-primary" ng-click="getGraph()">Graph</button></td>
+      <div class="col-md-6">
+        <canvas id="bar" class="chart chart-bar" data="data"
+        labels="labels" legend="true" options="options"
+        click="onClick">
+        </canvas> 
+      </div>
     </div>
   </div>
 </div>
