@@ -181,7 +181,7 @@ function todayGraph(err, userData, graphOptions, responder){
 	*/
 	console.log("Private give me " + userData._id + " games today!");
 
-	// Step One: Get current time in UTC
+	// Step One: Get current time in clients offset (timezone)
 	var now = moment().utcOffset(offSet*-1);
 	
 	var todayFirstMin = now;
@@ -189,17 +189,17 @@ function todayGraph(err, userData, graphOptions, responder){
 	todayFirstMin = moment(todayFirstMin).minutes(00);
 	todayFirstMin = moment(todayFirstMin).hours(00);
 	todayFirstMin = moment(todayFirstMin).format();
-	// convert to javascript date for comparison in mongodb
-
+	
 	var todayLastMin = now;
 	todayLastMin = moment(todayLastMin).seconds(59);
 	todayLastMin = moment(todayLastMin).minutes(59);
 	todayLastMin = moment(todayLastMin).hours(23);
 	todayLastMin = moment(todayLastMin).format();
-	// convert to javascript date for comparison in mongodb
 	
-	console.log("Today for client in UTC - " + todayFirstMin + " - " + todayLastMin);
+	
+	console.log("Today for client - " + todayFirstMin + " - " + todayLastMin);
 
+	// Query Mongo DB for all games between specified dates
 	gameModel.find({$and: [{"userId":userData._id}, {dateTime: {$gt: todayFirstMin, $lt: todayLastMin}}]}).sort({dateTime: -1}).exec(function (err, res){
 		if(err) return console.log(err);
 		analyzeGamesTodayGraph(userData, res, responder);
@@ -214,7 +214,7 @@ function analyzeGamesTodayGraph(userData, gameData, responder){
 	
 	// Initalise an array of 24 0's
 	// Each point represents a time in the last 24 hours
-	// Each value repreents time played in that hours (in minutes)
+	// Each value represents duration (in minutes)
 	var tempGraphData = [];
 	for(var i=0;i<24;i++){
 		tempGraphData.push(0);
@@ -222,7 +222,7 @@ function analyzeGamesTodayGraph(userData, gameData, responder){
 
 	// Iterate over each game and assign to array for graphing later
 	gameData.forEach(function(game){
-		// Get time in UTC
+		// Get game time in client's timezone
 		var a = moment(game.dateTime).utcOffset(offSet*-1);
 		
 		console.log(moment(a).format());
@@ -236,6 +236,9 @@ function analyzeGamesTodayGraph(userData, gameData, responder){
 	responder.send(tempGraphData);
 }
 function getHoursBetween(dateOne,dateTwo){
+	/*
+	Gets hours between two date objects
+	*/
 	dateOne = new Date(dateOne);
 	dateTwo = new Date(dateTwo);
 
