@@ -2,32 +2,32 @@
 var userModel = require("./models/userModel.js").userModel;
 var gameModel = require("./models/gameModel.js").gameModel;
 
-var responder;
 var offSet;
 
 var moment = require('moment-timezone');
 
-var getGraph = function getGraph(userName, serverName, graphOptions,  res){
+var getGraph = function getGraph(userName, serverName, graphOptions,  responder){
 	/*
 	Given user name, server and GRAPH name
 	Will pass information on to appropriate grapher
 	*/
-	responder = res;
 	offSet = graphOptions.userOffSet;
 
 	if(graphOptions.graphType == "today"){
-		getUserAndGraph(userName, serverName, graphOptions, todayGraph);
+		getUserAndGraph(userName, serverName, graphOptions, todayGraph, responder);
 	}
 	else if(graphOptions.graphType == "daysGraph"){
-		getUserAndGraph(userName, serverName, graphOptions, daysGraph);
-		
+		getUserAndGraph(userName, serverName, graphOptions, daysGraph, responder);
+	}
+	else if(graphOptions.graphType == "championDaysGraph"){
+		getUserAndGraph(userName, serverName, graphOptions, championDaysGraph, responder);
 	}
 	else {
 		console.log("Error incorrect graph name specified for getGraph(user, server, graphName, res)");
 	}
 }
 
-function getUserAndGraph(userName, serverName, graphOptions, graphFunctionName){
+function getUserAndGraph(userName, serverName, graphOptions, graphFunctionName, responder){
 	/*
 	Gets unique id for user
 	Send's user to specified graph function
@@ -35,7 +35,7 @@ function getUserAndGraph(userName, serverName, graphOptions, graphFunctionName){
 	userModel.findOne({"summonerName":userName, "server":serverName}).exec(function (err, userData) {
 		if (err) return console.error(err);
 		if(userData !== null){
-			graphFunctionName(null, userData, graphOptions);
+			graphFunctionName(null, userData, graphOptions, responder);
 		}
 		else{	
 			// Invalid summonerName given
@@ -44,8 +44,49 @@ function getUserAndGraph(userName, serverName, graphOptions, graphFunctionName){
 		}
 	});	
 }
+function championDaysGraph(err, userData, graphOptions, responder){
+	/*
+	Retrives games by user, between dates given
+	Passes to pieChartAnalyzer
+	*/
+	var now = moment().utcOffset(offSet*-1);
 
-function daysGraph(err, userData, graphOptions){
+	// As date's are made by clientside, they are already specified to there timezone
+	var startDate = graphOptions.startDate;
+	var endDate = graphOptions.endDate;
+
+	console.log("--- Graph Type - daysGraph --- ");
+	console.log("Start Date ---> ---> " + startDate);
+	console.log("End Date ---> ---> " + endDate);
+
+	// Query Mongo DB
+	gameModel.find({$and: [{"userId":userData._id}, {dateTime: {$gt: startDate, $lt: endDate}}]}).sort({dateTime: -1}).exec(function (err, res){
+		if(err) return console.log(err);
+		// Pass found games to analysis function
+		analyzeChampionDaysGraph(null, res, userData, responder);
+	});
+}
+function analyzeChampionDaysGraph(err, gameData, userData, responder){
+	/*
+	Given a list of games 
+	& user Data
+	returns list of how much each champion played
+	*/
+	var championNames = [];
+	
+	var championData = [];
+
+	for(var i=0;i<championNames.length;i++){
+		championData.push(0);
+	}
+
+	gameData.forEach(function(game){		
+		championData[game.championId] += 1;
+	});
+
+}
+
+function daysGraph(err, userData, graphOptions, responder){
 	/*
 	Retrives games by user, between dates given
 	*/
@@ -65,10 +106,10 @@ function daysGraph(err, userData, graphOptions){
 	gameModel.find({$and: [{"userId":userData._id}, {dateTime: {$gt: startDate, $lt: endDate}}]}).sort({dateTime: -1}).exec(function (err, res){
 		if(err) return console.log(err);
 		// Pass found games to analysis function
-		analyzeGamesDaysGraph(null, res, userData, startDate, endDate);
+		analyzeGamesDaysGraph(null, res, userData, startDate, endDate, responder);
 	});
 }
-function analyzeGamesDaysGraph(err, gameData, userData, startDate, endDate){
+function analyzeGamesDaysGraph(err, gameData, userData, startDate, endDate, responder){
 	/*
 	Generates a data series (1 dp = 1 day)
 	Given dateFrom - dateTo &
@@ -86,7 +127,11 @@ function analyzeGamesDaysGraph(err, gameData, userData, startDate, endDate){
 	console.log(moment(startDate).format());
 
 	var tempGraphData = [];
+	var tempGraphLabels = [];
+	var tempDateLabel = startDate;
 	for(var i=0;i<daysBetween;i++){
+		tempGraphLabels.push(moment(tempDateLabel).format("MMM Do"));
+		tempDateLabel = moment(tempDateLabel).add(1, 'days');
 		tempGraphData.push(0);
 	}
 
@@ -105,10 +150,12 @@ function analyzeGamesDaysGraph(err, gameData, userData, startDate, endDate){
 		tempGraphData[daysFromStartDate] += duration;
 	});
 
-	responder.send(tempGraphData);
+	var graphInfo = {data: tempGraphData, labels: tempGraphLabels}
+	console.log(graphInfo);
+	responder.send(graphInfo);
 }
 
-function todayGraph(err, userData, graphOptions){
+function todayGraph(err, userData, graphOptions, responder){
 	/*
 	Given a user, will get all the games they have played today (in there timezone)
 	*/
@@ -135,11 +182,11 @@ function todayGraph(err, userData, graphOptions){
 
 	gameModel.find({$and: [{"userId":userData._id}, {dateTime: {$gt: todayFirstMin, $lt: todayLastMin}}]}).sort({dateTime: -1}).exec(function (err, res){
 		if(err) return console.log(err);
-		analyzeGamesTodayGraph(userData, res);
+		analyzeGamesTodayGraph(userData, res, responder);
 	});
 	
 }
-function analyzeGamesTodayGraph(userData, gameData){
+function analyzeGamesTodayGraph(userData, gameData, responder){
 	/*
 	Given a list of games will slice them into each hour, so we can output to a graph
 	*/
