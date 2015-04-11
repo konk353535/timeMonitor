@@ -2,7 +2,7 @@ var myApp = angular.module('myCharts', ["chart.js"]);
 // Access specific angular chart js
 myApp.controller("todayChartCtrl", function ($scope, $http) {
 	// Request server for graph information
-	$scope.getGraph = function(){
+	//$scope.getGraph = function(){
 
 		// Gets clients timezone offset
 		var offset = new Date().getTimezoneOffset();
@@ -10,7 +10,7 @@ myApp.controller("todayChartCtrl", function ($scope, $http) {
 		$http.post('/graph', {userOffSet: offset, graphType: "today"}).success(function(response){
 			$scope.data = [response];
 		});
-	}
+	//}
 
 	// Today graph options
 	$scope.labels = ['12', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '1', '2','3','4','5','6','7','8','9','10','11'];
@@ -28,15 +28,19 @@ myApp.controller("weekChartCtrl", function ($scope, $http) {
 	console.log(fromDate);
 	console.log(toDate);
 	// Request server for graph information
-	$scope.getGraph = function(){
+	//$scope.getGraph = function(){
 		// Gets clients timezone offset
 		var offset = new Date().getTimezoneOffset();
 		// Request server for todays graph data
 		$http.post('/graph', {userOffSet: offset, graphType: "daysGraph", startDate: fromDate, endDate: toDate}).success(function(response){
-			$scope.data = [response];
+			graphInfo = response;
+			console.log(graphInfo.data);
+			console.log(graphInfo.labels);
+			$scope.data = [graphInfo.data];
+			$scope.labels = graphInfo.labels;
 		});
 
-	}
+	//}
 
 	// Today graph options
 	$scope.labels = ['0','1','2','3','4'];
