@@ -1,18 +1,26 @@
-// db.games.find({"userId":ObjectId("5524cd9d47e4fda94c504963")}).count()
+// Models to interface with Mongo DB
 var userModel = require("./models/userModel.js").userModel;
 var gameModel = require("./models/gameModel.js").gameModel;
 
+// Needs to be removed, simulatenous requests will screw this up
 var offSet;
 
+// Moment so we can modify dates
 var moment = require('moment-timezone');
+
 
 var getGraph = function getGraph(userName, serverName, graphOptions,  responder){
 	/*
+	The 'manager' of graphManager, given parameters will pass along to functions associated with each graph type
+
 	Given user name, server and GRAPH name
 	Will pass information on to appropriate grapher
 	*/
+	
+	// Set offset
 	offSet = graphOptions.userOffSet;
 
+	// Check what graph the client wants
 	if(graphOptions.graphType == "today"){
 		getUserAndGraph(userName, serverName, graphOptions, todayGraph, responder);
 	}
@@ -23,6 +31,8 @@ var getGraph = function getGraph(userName, serverName, graphOptions,  responder)
 		getUserAndGraph(userName, serverName, graphOptions, championDaysGraph, responder);
 	}
 	else {
+	// If client is asking for a graph we don't have, send error
+		responder.send("We have an error m8 that graphType doesn't exist");
 		console.log("Error incorrect graph name specified for getGraph(user, server, graphName, res)");
 	}
 }
@@ -73,7 +83,7 @@ function analyzeChampionDaysGraph(err, gameData, userData, responder){
 	returns list of how much each champion played
 	*/
 	var championNames = [];
-	
+
 	var championData = [];
 
 	for(var i=0;i<championNames.length;i++){
@@ -115,6 +125,7 @@ function analyzeGamesDaysGraph(err, gameData, userData, startDate, endDate, resp
 	Given dateFrom - dateTo &
 	User's information &
 	Game information between dates given
+	data = duration in minutes
 	*/
 	
 	// How many data points in graph
