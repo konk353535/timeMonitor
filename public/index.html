@@ -34,13 +34,10 @@
 <div ng-app="myCharts" id="chartApp">
   <div class="container" ng-controller="todayChartCtrl">
     <div class="row" >
-      <h3>Last 24 Hours</h3>
+      <h3>Today</h3>
       <td><button class="btn btn-primary" ng-click="getGraph()">Graph</button></td>
       <div class="col-md-6">
-        <canvas id="line" class="chart chart-line" data="data"
-        labels="labels" legend="true" series="series" options="options"
-        click="onClick">
-        </canvas> 
+        <canvas id="line" class="chart chart-line" data="data" labels="labels" legend="true" series="series" options="options" click="onClick"></canvas> 
       </div>
     </div>
 
@@ -49,16 +46,24 @@
 
   <div class="container" ng-controller="weekChartCtrl">
     <div class="row" >
-      <h3>Last 7 Days</h3>
+      <h3>Last 5 Days</h3>
       <td><button class="btn btn-primary" ng-click="getGraph()">Graph</button></td>
       <div class="col-md-6">
-        <canvas id="bar" class="chart chart-bar" data="data"
-        labels="labels" legend="true" options="options"
-        click="onClick">
-        </canvas> 
+        <canvas id="bar" class="chart chart-bar" data="data" labels="labels" legend="true" options="options" click="onClick"></canvas> 
       </div>
     </div>
   </div>
+
+    <div class="container" ng-controller="champChartCtrl">
+    <div class="row" >
+      <h3>5 Day Champion Distribution</h3>
+      <td><button class="btn btn-primary" ng-click="getGraph()">Graph</button></td>
+      <div class="col-md-6">
+       <canvas id="doughnut" class="chart chart-doughnut" data="data" labels="labels" options="options"></canvas>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 
