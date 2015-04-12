@@ -2,6 +2,9 @@
 var userModel = require("./models/userModel.js").userModel;
 var gameModel = require("./models/gameModel.js").gameModel;
 
+// Getting champ names from champ id
+var staticManager = require("./staticApiManager.js");
+
 // Needs to be removed, simulatenous requests will screw this up
 var offSet;
 
@@ -26,7 +29,6 @@ var getGraph = function getGraph(userName, serverName, graphOptions,  responder)
 	}
 	else if(graphOptions.graphType == "daysGraph"){
 		getUserThenGraph(userName, serverName, graphOptions, daysGraph, responder);
-		getUserThenGraph(userName, serverName, graphOptions, championDaysGraph, responder);
 	}
 	else if(graphOptions.graphType == "championDaysGraph"){
 		getUserThenGraph(userName, serverName, graphOptions, championDaysGraph, responder);
@@ -70,10 +72,6 @@ function championDaysGraph(err, userData, graphOptions, responder){
 	var startDate = graphOptions.startDate;
 	var endDate = graphOptions.endDate;
 
-	console.log("--- Graph Type - daysGraph --- ");
-	console.log("Start Date ---> ---> " + startDate);
-	console.log("End Date ---> ---> " + endDate);
-
 	// Query Mongo DB
 	gameModel.find({$and: [{"userId":userData._id}, {dateTime: {$gt: startDate, $lt: endDate}}]}).sort({dateTime: -1}).exec(function (err, res){
 		if(err) return console.log(err);
@@ -93,7 +91,7 @@ function analyzeChampionDaysGraph(err, gameData, userData, responder){
 	gameData.forEach(function(game){
 		if(championIds.indexOf(game.champion) > -1){
 			var champIdIndex = championIds.indexOf(game.champion);
-			var duration = Math.round(game.duration / 60);
+			var duration = parseFloat((game.duration / 3600).toFixed(2));
 
 			championGameCounts[champIdIndex] += duration;
 		}
@@ -101,15 +99,17 @@ function analyzeChampionDaysGraph(err, gameData, userData, responder){
 			championIds.push(game.champion);
 
 			var champIdIndex = championIds.indexOf(game.champion);
-			var duration = Math.round(game.duration / 60);
+			var duration = parseFloat((game.duration / 3600).toFixed(2));
 
 			championGameCounts[champIdIndex] = duration;
 		}
 	});
 
-	console.log(championIds);
-	console.log(championGameCounts);
 
+	var championNames = staticManager.getChampNames(championIds);
+	
+	var championPieInfo = {data: championGameCounts, labels: championNames};
+	responder.send(championPieInfo);
 }
 
 // Days Graph Functions
@@ -147,7 +147,7 @@ function analyzeGamesDaysGraph(err, gameData, userData, startDate, endDate, resp
 	var startDate = moment(startDate).utcOffset(offSet*-1);
 
 	// Log startdate in clients timezone
-	console.log("Start date clients time zone - > " + moment(startDate).format());
+	//console.log("Start date clients time zone - > " + moment(startDate).format());
 
 	// Example: Data = 70m, labels = 3rd April 
 	var tempGraphData = [];
@@ -170,12 +170,12 @@ function analyzeGamesDaysGraph(err, gameData, userData, startDate, endDate, resp
 		var a = moment(game.dateTime).utcOffset(offSet*-1);
 		
 		// Log game time in client's timezone
-		console.log(moment(a).format());
+		//console.log(moment(a).format());
 		
 		// Get what datapoint this is (by getting how many days between this game and startDate)
 		var daysFromStartDate = Math.floor(getHoursBetween(startDate, moment(a).format()) / 24);
 
-		console.log("Data Point - " + daysFromStartDate);
+		//console.log("Data Point - " + daysFromStartDate);
 
 		// Log actual minutes to specified datapoint
 		var duration = Math.round(game.duration / 60);
@@ -212,7 +212,6 @@ function todayGraph(err, userData, graphOptions, responder){
 	todayLastMin = moment(todayLastMin).format();
 	
 	
-	console.log("Today for client - " + todayFirstMin + " - " + todayLastMin);
 
 	// Query Mongo DB for all games between specified dates
 	gameModel.find({$and: [{"userId":userData._id}, {dateTime: {$gt: todayFirstMin, $lt: todayLastMin}}]}).sort({dateTime: -1}).exec(function (err, res){
@@ -224,7 +223,7 @@ function analyzeGamesTodayGraph(userData, gameData, responder){
 	/*
 	Given a list of games will slice them into each hour, so we can output to a graph
 	*/
-	console.log("Analyzing Player - " + userData.summonerName);
+	// console.log("Analyzing Player - " + userData.summonerName);
 	
 	// Initalise an array of 24 0's
 	// Each point represents a time in the last 24 hours
@@ -238,8 +237,6 @@ function analyzeGamesTodayGraph(userData, gameData, responder){
 	gameData.forEach(function(game){
 		// Get game time in client's timezone
 		var a = moment(game.dateTime).utcOffset(offSet*-1);
-		
-		console.log(moment(a).format());
 		
 		var gameDate = a;
 		var hour = moment(gameDate).hours();
