@@ -44,18 +44,25 @@ function recordDay(err, userData, responder){
     console.log("Record Day ID = " + userData._id);
 
     gameModel.aggregate([
+        // Only use games from this user
         { $match : { userId : userData._id}},
-        { $project : { gameTimeLocal: { $subtract : [ "$dateTime", -10*1000*60*60] } , duration : "$duration"} }, // this is (-4)
+        // Sync game time's to users timezone
+        { $project : { gameTimeLocal: { $subtract : [ "$dateTime", userData.offset*1000*60] } , duration : "$duration"} }, // this is (-4)
         { $group : {
            _id : { year: { $year : "$gameTimeLocal" }, month: { $month : "$gameTimeLocal" },day: { $dayOfMonth : "$gameTimeLocal" }},
-           totalMinutes : { $sum: "$duration"},
+           totalSeconds : { $sum: "$duration"},
            count : { $sum : 1 }}
         },
-        { $sort: {totalMinutes: -1}
-        }],
+        { $sort: {totalSeconds: -1}
+        },
+        { $limit: 1}],
     function (err, res){
         if(err);
+        var recordGame = res[0];
+        var recordSeconds = recordGame.totalSeconds;
+        var recordMinutes = Math.round(recordSeconds / 60);
         console.log(res);
+        console.log("Record Day - " + recordMinutes + "m");
     })
 
 }
