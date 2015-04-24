@@ -9,24 +9,33 @@ var gameModel = require("./models/gameModel.js").gameModel;
 // Converting to UTC
 var moment = require('moment-timezone');
 
-
 // Update User Games Functions
 var updateUser = function getUserToUpdate(){
+
+	console.log("Started - " + new Date());
 	// Will get a list of users who haven't had there match history read in the last 4 hours
-	userModel.find({updated: false}).sort({summonerId: -1}).limit(1).exec(function (err, userData) {
+	userModel.find({updated: false}).sort({lastMatchId: 1}).limit(105).exec(function (err, userData) {
 		if (err) return console.error(err);
 		// Got the user data commander!
 		// Make sure we atleast found one
+		console.log("Length - " + userData.length);
 		if(userData.length > 0){
-			// Lets remove him from the array, so we can use him like an object
-			user = userData[0];
-			scanUserGames(user);
+			while(userData.length > 0){
+				// Lets remove him from the array, so we can use him like an object
+				var user = userData[0];
+				// Remove from array so we know when we have processed all users
+				userData.splice(0, 1);
+
+				scanUserGames(user);
+			}
+			userData = null;
+			user = null;
 		}
 		else{
 		// No soilders left to update commander
 			console.log("Commander everyone is updated");
 		}
-	});	
+	});
 }
 function scanUserGames(user){
 	/*
@@ -36,25 +45,24 @@ function scanUserGames(user){
 	If 404 returned, check that this is a legit user, if they are then set updated=true (some people have no games on the api server, so even thought they are a user
 	they will return a 404 for recent games as they have none
 	*/
-	console.log("Summooner Id = " + user.summonerId);
-	console.log("server = " + user.server);
-	summonerId = user.summonerId;
-	serverName = user.server;
+
+	var summonerId = user.summonerId;
+	var serverName = user.server;
 	// Request last 10 games
-	request('https://' + serverName + '.api.pvp.net/api/lol/' + serverName + '/v1.3/game/by-summoner/' + summonerId + '/recent?api_key=' + config.apikey , 
+	request('https://' + serverName + '.api.pvp.net/api/lol/' + serverName + '/v1.3/game/by-summoner/' + summonerId + '/recent?api_key=' + config.apikey ,
 	function (error, response, body) {
 		if (!error && response.statusCode == 200) {
 			console.log("Data Recievied - " + user.summonerName);
 			analyzeGames(user, JSON.parse(response.body));
 		}
 		else {
-			console.log("Invalid Summoner Name or Server");
+			console.log("Invalid Summoner Name or Server" + user.summonerName + " - " + user.server);
 
 			// Run check that user is a legit user
 
-			request('https://' + serverName + '.api.pvp.net/api/lol/' + serverName + '/v1.4/summoner/by-name/' + user,summonerName + '?api_key=' + config.apikey , function (error, response, body) {
+			request('https://' + serverName + '.api.pvp.net/api/lol/' + serverName + '/v1.4/summoner/by-name/' + user.summonerName + '?api_key=' + config.apikey , function (error, response, body) {
 				if (!error && response.statusCode == 200) {
-					userData = JSON.parse(response.body);
+					var userData = JSON.parse(response.body);
 					// Clearly a legit user
 					// Must of no previous games or match v1.3 is down
 					updateUserReset(user._id);
@@ -71,25 +79,26 @@ function updateUserReset(userId){
 	userModel.update({"_id":  userId}, { updated: true}, function(err, newInfo){
 		if(err) return handleError(err);
 		console.log("User Fully Updated");
+		console.log("Finished - " + new Date());
 	});
 }
 
 function analyzeGames(user, gamesData){
-	lastMatchId = user.lastMatchId;
+	var lastMatchId = user.lastMatchId;
 	// So we can update the last match id of the player later
-	currentMaxMatchId = 0;
-	gamesData = gamesData.games;
+	var currentMaxMatchId = 0;
+	var gamesData = gamesData.games;
 	gamesData.forEach(function(game){
 		// To make sure we're only using new games (that we haven't added to DB)
 		if(game.gameId > lastMatchId){
 			// console.log(game.gameId + " > " + lastMatchId);
-			stats = game.stats;
+			var stats = game.stats;
 
-			matchId = game.gameId;
-			timePlayed = stats.timePlayed;
-			champion = game.championId;
-			position = stats.playerPosition;
-			dateCreated = game.createDate;
+			var matchId = game.gameId;
+			var timePlayed = stats.timePlayed;
+			var champion = game.championId;
+			var position = stats.playerPosition;
+			var dateCreated = game.createDate;
 			if(position === undefined){
 				position = 0;
 			}
@@ -112,8 +121,10 @@ function analyzeGames(user, gamesData){
 			console.log("maxMatchId Updated");
 		});
 	}
-	// Change updated status, so we know we've scanned this user recently 
+	// Change updated status, so we know we've scanned this user recently
 	updateUserReset(user._id);
+	gamesData = null;
+	user = null;
 }
 
 function addGame(user, newMatchId, newDuration, newChampion, newPosition, dateCreated){
@@ -140,6 +151,7 @@ function addGame(user, newMatchId, newDuration, newChampion, newPosition, dateCr
 		// Successfully added game to db
 		console.log("New Game Added");
 	});
+	user = null;
 }
 
 var resetAllUsers = function resetAllUsers(){
@@ -150,7 +162,7 @@ var resetAllUsers = function resetAllUsers(){
 	  if (err) return console.error(err);
 	  console.log("Reset Users Updated Field");
 	});
-}	
+}
 
 
 module.exports = {
