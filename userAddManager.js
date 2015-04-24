@@ -6,13 +6,14 @@ var request = require('request');
 var userModel = require("./models/userModel.js").userModel;
 
 // New User Functions
-var addUser = function getSummonerId(summonerName, serverName, res){
+var addUser = function getSummonerId(summonerName, serverName, offset, res){
+
 	// Request Summoner ID
 	request('https://' + serverName + '.api.pvp.net/api/lol/' + serverName + '/v1.4/summoner/by-name/' + summonerName + '?api_key=' + config.apikey , function (error, response, body) {
 		if (!error && response.statusCode == 200) {
 			userData = JSON.parse(response.body);
 			console.log("Data Recievied - ");
-			newUserAdd(userData, serverName, res);
+			newUserAdd(userData, serverName, offset, res);
 		}
 		else {
 			console.log("Invalid Summoner Name or Server");
@@ -20,7 +21,7 @@ var addUser = function getSummonerId(summonerName, serverName, res){
 	});
 }
 
-function newUserAdd(playerData, serverName, res){
+function newUserAdd(playerData, serverName, offset, res){
 	/*
 	Adds new user to db, or update's existing users summoner name (incase of name change)
 	*/
@@ -43,9 +44,8 @@ function newUserAdd(playerData, serverName, res){
 	var newUser= new userModel({
 		summonerId: summonerID,
 		server: serverName,
-		updated: false,
-		lastMatchId: 25,
-		summonerName: summonerNameNew
+		summonerName: summonerNameNew,
+		offset: offset
 	});
 	// Because we need newUser clone without the ID, (for updating)
 	var upsertData = newUser.toObject();
