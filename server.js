@@ -26,6 +26,8 @@ var cronManager = require("./cronManager.js");
 // User add manager to handle new user posts
 var userAddManager = require("./userAddManager.js");
 
+var statManager = require("./statManager.js");
+statManager.getStats("iyvy", "oce", "recordDay", "");
 
 app.get('/', function (req, res) {
 	res.send('Hello World');
@@ -53,7 +55,7 @@ app.post('/graph', function(req,res){
 
 app.post('/newPlayer', function (req, res) {
 	console.log("Captain transmission recieved - Private Name - " + req.body.name + " - Battalion - "  + req.body.server);
-	userAddManager.addUser(req.body.name, req.body.server, res);
+	userAddManager.addUser(req.body.name, req.body.server, req.body.reqOffset, res);
 	//res.send("Roger that private, info recieved");
 });
 
