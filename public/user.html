@@ -1,0 +1,80 @@
+<!DOCTYPE>
+<html>
+<head>
+<!-- Because the url has user/SummName/ServerName, html thinks those are folders, we tell em no -->
+<base href="/">
+<link rel="stylesheet" href="angular-chart.css">
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+
+<title>Users</title>
+<style>
+  h1,h2 {
+    margin-bottom: 20px;
+  }
+</style>
+</head>
+<body>
+
+<div ng-app="myApp">
+  <div class="container" ng-controller="AppCtrl">
+
+  </div>
+</div>
+
+<div ng-app="myCharts" id="chartApp" ng-controller="todayChartCtrl">
+
+  <div class="container">
+    <h1>Summoner {{userName}}</h1>
+
+    <div ng-view></div>
+
+    <div class="row" >
+      <div class="col-md-6" style="text-align:center">
+        <h2>Chart Today</h2>
+        <canvas id="line" class="chart chart-line" data="todayChart.data" labels="todayChart.labels" legend="true" series="todayChart.series" options="todayChart.options" click="onClick"></canvas>
+      </div>
+      <div class="col-md-6" style="text-align:center">
+        <h2>Stats</h2>
+        <h3>Today</h3>
+        <h4>7h 32m</h4>
+        <h3>Daily Average </h3>
+        <h4>2h 10m</h4>
+        <h3>Record Day</h3>
+        <h4>{{stats.recordDayMinutes/60 | number:2}}hr <small>({{stats.recordDayDate | date : 'mediumDate'}})</small></h4>
+      </div>
+    </div>
+
+  </div>
+
+
+  <div class="container">
+    <div class="row" >
+      <div class="col-md-6" style="text-align:center">
+        <h2>Chart 7 Days</h2>
+        <canvas id="bar" class="chart chart-line" data="weekChart.data" labels="weekChart.labels" legend="true" options="weekChart.options" click="onClick"></canvas>
+      </div>
+      <div class="col-md-6" style="text-align:center">
+        <h2>Champions (7 Days)</h2>
+       <canvas id="doughnut" class="chart chart-doughnut" data="champChart.data" labels="champChart.labels" options="champChart.options"></canvas>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Angular base js -->
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0-rc.0/angular.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0-rc.0/angular-route.js"></script>
+<!-- Charting requirments -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
+<script src="angular-chart.js"></script>
+<!-- Controllers -->
+<script src="controllers/controller.js"></script>
+<script src="controllers/graphController.js"></script>
+</body>
+</html>
