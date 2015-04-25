@@ -50,6 +50,18 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 		});
 	}
 
+	function getStatToday(){
+		// Sum today chart for total playTime today
+		var totalMins = 0;
+		var todayDataPoints = $scope.todayChart.data[0];
+		console.log(todayDataPoints);
+		for (var i = 0; i < todayDataPoints.length; i++){
+			totalMins += todayDataPoints[i];
+		}
+
+		$scope.stats.todayMinutes = totalMins;
+	}
+
 
 	function initalDailyGraph(){
 		$scope.todayChart = {};
@@ -74,6 +86,8 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 			server: $routeParams["userServer"]
 		}).success(function(response){
 			$scope.todayChart.data = [response];
+			// Update total today played time after we recieve data for today chart
+			getStatToday();
 		});
 	}
 
