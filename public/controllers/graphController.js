@@ -5,19 +5,36 @@ var myApp = angular.module('myCharts', ["chart.js", "ngRoute"]);
 // Access specific chart controller
 myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', function ($rootScope, $http, $routeParams) {
 
-	// Listen for data from user add/updated controller before we load the graph data (angular issues :())
-	// Request server for todays graph data
-	/*
-	$http.post('/userReadyForGraphing/', {userOffSet: offset, graphType: "today"}).success(function(response){
-		$scope.data = [response];
-	});
-	*/
 	$scope = $rootScope;
+	$scope.stats = {};
+
+
 	console.log($routeParams);
+
 	initalDailyGraph();
+
 	if($routeParams.userName){
+		$rootScope.userName = $routeParams.userName;
+		getStatRecordDay();
 		updateDailyGraph();
 	}
+
+	function getStatRecordDay(){
+		// Request server for most played day
+		$http.post('/stat', {
+			name: $routeParams["userName"],
+			server: $routeParams["userServer"]
+		}).success(function(res){
+			console.log("Stat - " + res);
+			$scope.stats.recordDayMinutes = res.recordMinutes;
+			var recordDate = new Date();
+			recordDate.setFullYear(res.year);
+			recordDate.setMonth(res.month);
+			recordDate.setDate(res.day);
+			$scope.stats.recordDayDate = recordDate;
+		});
+	}
+
 
 	function initalDailyGraph(){
 		$scope.todayChart = {};
@@ -50,7 +67,6 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 	if($routeParams.userName){
 		initalMultiDayGraph();
 		updateMultiDayGraph();
-		$rootScope.userName = $routeParams.userName;
 	}
 	else {
 		initalMultiDayGraph();
