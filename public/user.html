@@ -40,11 +40,11 @@
       <div class="col-md-6" style="text-align:center">
         <h2>Stats</h2>
         <h3>Today</h3>
-        <h4>7h 32m</h4>
+        <h4>{{stats.todayMinutes/60 | number:2}} hr</h4>
         <h3>Daily Average </h3>
-        <h4>2h 10m</h4>
+        <h4>{{stats.averageDayMinutes/60 | number:2}} hr</h4>
         <h3>Record Day</h3>
-        <h4>{{stats.recordDayMinutes/60 | number:2}}hr <small>({{stats.recordDayDate | date : 'mediumDate'}})</small></h4>
+        <h4>{{stats.recordDayMinutes/60 | number:2}} hr<small>({{stats.recordDayDate | date : 'mediumDate'}})</small></h4>
       </div>
     </div>
 
