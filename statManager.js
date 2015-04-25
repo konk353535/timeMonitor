@@ -41,7 +41,7 @@ var getStats = function getStat(userName, userServer, statType, responder){
 };
 
 function recordDay(err, userData, responder){
-    console.log("Record Day ID = " + userData._id);
+    console.log("RecordDay stat request");
 
     gameModel.aggregate([
         // Only use games from this user
@@ -59,10 +59,22 @@ function recordDay(err, userData, responder){
     function (err, res){
         if(err);
         var recordGame = res[0];
-        var recordSeconds = recordGame.totalSeconds;
-        var recordMinutes = Math.round(recordSeconds / 60);
-        console.log(res);
-        console.log("Record Day - " + recordMinutes + "m");
+        var recordMinutes = Math.round(recordGame.totalSeconds / 60);
+
+        var recordDateObject = recordGame._id;
+        var statData = {
+            recordMinutes : recordMinutes,
+            year: recordDateObject.year,
+            month: recordDateObject.month,
+            day: recordDateObject.day
+        }
+        responder.send(statData);
+
+        // Flush variables ain't using em :( anymore
+        recordGame = null;
+        recordMinutes = null;
+        recordDateObject = null;
+        statData = null;
     })
 
 }
