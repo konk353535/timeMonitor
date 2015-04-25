@@ -93,7 +93,6 @@ function averageDay(err, userData, responder){
     */
     console.log("------------- AverageDay stat request ---------------");
 
-
     // Get totalGameDuration
     gameModel.aggregate([
     { $match : { userId : userData._id}},
@@ -104,22 +103,29 @@ function averageDay(err, userData, responder){
     function (err, res){
         if(err){console.log(err);}
         console.log(res);
+
         // Store totalTrackedTime
         var totalGameStats = res[0];
         var totalTrackedMinutes = Math.round(totalGameStats.totalTimeSeconds/60);
+
         // Get Latest Game
         gameModel.findOne({userId : userData._id}).sort({dateTime: -1}).exec(function(err,res){
             if(err){console.log(err);}
             var latestGame = res.dateTime;
+
             // Get Earliest Game
             gameModel.findOne({userId : userData._id}).sort({dateTime: 1}).exec(function(err,res){
                 if(err){console.log(err);}
+
                 console.log("Earliest Game - " + res.dateTime);
                 console.log("Latest Game - " + latestGame);
                 console.log("totalTrackedMinutes - " + totalTrackedMinutes);
+
                 averageDayOutputter(res.dateTime, latestGame, totalTrackedMinutes, responder);
             })
+
         })
+
     });
 }
 
