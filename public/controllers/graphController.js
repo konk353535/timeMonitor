@@ -15,7 +15,10 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 
 	if($routeParams.userName){
 		$rootScope.userName = $routeParams.userName;
+
 		getStatRecordDay();
+		getStatAverageDay();
+
 		updateDailyGraph();
 	}
 
@@ -23,15 +26,27 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 		// Request server for most played day
 		$http.post('/stat', {
 			name: $routeParams["userName"],
-			server: $routeParams["userServer"]
+			server: $routeParams["userServer"],
+			statType: "recordDay"
 		}).success(function(res){
 			console.log("Stat - " + res);
 			$scope.stats.recordDayMinutes = res.recordMinutes;
 			var recordDate = new Date();
 			recordDate.setFullYear(res.year);
-			recordDate.setMonth(res.month);
+			recordDate.setMonth(res.month - 1);
 			recordDate.setDate(res.day);
 			$scope.stats.recordDayDate = recordDate;
+		});
+	}
+	function getStatAverageDay(){
+		// Request server for most average day
+		$http.post('/stat', {
+			name: $routeParams["userName"],
+			server: $routeParams["userServer"],
+			statType: "averageDay"
+		}).success(function(res){
+			console.log("AvgMinDay - " + res);
+			$scope.stats.averageDayMinutes = res[0];
 		});
 	}
 
