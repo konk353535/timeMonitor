@@ -82,13 +82,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 	function initalAllGraph(){
 		$scope.allChart = {};
 
-		var labels = [];
 		var data = [];
-		for(var i = 0; i < 300; i++){
-			labels.push(i.toString());
-			var randomNum = Math.random()*100;
-			data.push(randomNum);
-		}
 
 		// Today graph options
 		$scope.allChart.chartConfig = {
@@ -100,47 +94,53 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 		    },
 		    xAxis: {
 		            type: 'datetime',
-		            minRange: 2 * 24 * 3600000 // fourteen days
+		            title : {
+		            	text: 'Date'
+		            },
+		            minRange: 4 * 24 * 3600000 // four days
+		    },
+		    yAxis: {
+		    	title : {
+		    		text: 'Hours'
+		    	},
+		    	min: 0
 		    },
 		    series: [{
 		        data: data
 		    }],
 		    title: {
-		        text: 'Hello'
+		        text: 'All Time Tracked'
 		    },
 
 		    loading: false
 		}
 	}
 	function updateAllGraph(){
-		var n = new Date();
-		var fromDate = new Date(n.getFullYear(), (n.getMonth()), n.getDate(), 0, 0, 0, 0);
-		var toDate = new Date(n.getFullYear(), (n.getMonth()), n.getDate(), 0, 0, 0, 0);
-
-		toDate.setDate(fromDate.getDate() + 1);
-		fromDate.setDate(fromDate.getDate() - 25);
 
 		var offset = new Date().getTimezoneOffset();
 
-		// Request server for mutli day graph data
+		var now = new Date();
 
+		// Request server for all tracked days graph data
 		$http.post('/graph', {
 			userOffSet: offset,
-			graphType: "daysGraph",
-			startDate: fromDate,
-			endDate: toDate,
+			graphType: "allGraph",
+			clientYear: now.getFullYear(),
+			clientMonth: (now.getMonth()+1),
+			clientDay: now.getDate(),
 			name: $routeParams["userName"],
 			server: $routeParams["userServer"]
 		}).success(function(response){
 			graphInfo = response;
 
-			console.log("AllChart Data - " + graphInfo.data);
-			console.log("AllChart Labels - " + graphInfo.labels);
+			console.log("AllChart Data - " + graphInfo.dataPoints);
 
 			$scope.allChart.chartConfig.series = [{
 			            pointInterval: 24 * 3600 * 1000,
-			            pointStart: Date.UTC(graphInfo.labels[0]),
-				data: graphInfo.data
+			            name: 'Hours Played',
+			            // -1 from firstGameDateMonth, as it is in standard month format 1 = january, where Date.UTC wants format 0 = january
+			            pointStart: Date.UTC(graphInfo.firstGameDateYear, graphInfo.firstGameDateMonth-1, graphInfo.firstGameDateDay),
+				data: graphInfo.dataPoints
 			}];
 		});
 	}
