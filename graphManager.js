@@ -19,7 +19,7 @@ var getGraph = function getGraph(userName, serverName, graphOptions,  responder)
 	Given user name, server and GRAPH name
 	Will pass information on to appropriate grapher
 	*/
-	
+
 	// Set offset
 	offSet = graphOptions.userOffSet;
 
@@ -29,9 +29,13 @@ var getGraph = function getGraph(userName, serverName, graphOptions,  responder)
 	}
 	else if(graphOptions.graphType == "daysGraph"){
 		getUserThenGraph(userName, serverName, graphOptions, daysGraph, responder);
+
 	}
 	else if(graphOptions.graphType == "championDaysGraph"){
 		getUserThenGraph(userName, serverName, graphOptions, championDaysGraph, responder);
+	}
+	else if(graphOptions.graphType == "allGraph"){
+		getUserThenGraph(userName, serverName, graphOptions, allGraph, responder);
 	}
 	else {
 	// If client is asking for a graph we don't have, send error
@@ -52,12 +56,12 @@ function getUserThenGraph(userName, serverName, graphOptions, graphFunctionName,
 			// User Found
 			graphFunctionName(null, userData, graphOptions, responder);
 		}
-		else{	
+		else{
 			// Invalid summonerName given
 			console.log("Error: Specified user could not be found");
 			responder.send("Error: Specified user could not be found");
 		}
-	});	
+	});
 }
 
 // Champion Pie Graph Functions (In Development)
@@ -81,7 +85,7 @@ function championDaysGraph(err, userData, graphOptions, responder){
 }
 function analyzeChampionDaysGraph(err, gameData, userData, responder){
 	/*
-	Given a list of games 
+	Given a list of games
 	& user Data
 	returns list of how much each champion played
 	*/
@@ -107,7 +111,7 @@ function analyzeChampionDaysGraph(err, gameData, userData, responder){
 
 
 	var championNames = staticManager.getChampNames(championIds);
-	
+
 	var championPieInfo = {data: championGameCounts, labels: championNames};
 	responder.send(championPieInfo);
 }
@@ -139,7 +143,7 @@ function analyzeGamesDaysGraph(err, gameData, userData, startDate, endDate, resp
 	Game info for given dates
 	Data = sum mins grouped by day
 	*/
-	
+
 	// Get # Datapoints in graph
 	var daysBetween = getHoursBetween(startDate, endDate) / 24;
 
@@ -149,12 +153,12 @@ function analyzeGamesDaysGraph(err, gameData, userData, startDate, endDate, resp
 	// Log startdate in clients timezone
 	//console.log("Start date clients time zone - > " + moment(startDate).format());
 
-	// Example: Data = 70m, labels = 3rd April 
+	// Example: Data = 70m, labels = 3rd April
 	var tempGraphData = [];
 	var tempGraphLabels = [];
 
 	var tempDateLabel = startDate;
-	
+
 	// Initalise array of 0's for data
 	for(var i=0;i<daysBetween;i++){
 		tempGraphLabels.push(moment(tempDateLabel).format("MMM Do"));
@@ -168,10 +172,10 @@ function analyzeGamesDaysGraph(err, gameData, userData, startDate, endDate, resp
 
 		// set game time to client's timezone
 		var a = moment(game.dateTime).utcOffset(offSet*-1);
-		
+
 		// Log game time in client's timezone
 		//console.log(moment(a).format());
-		
+
 		// Get what datapoint this is (by getting how many days between this game and startDate)
 		var daysFromStartDate = Math.floor(getHoursBetween(startDate, moment(a).format()) / 24);
 
@@ -189,7 +193,7 @@ function analyzeGamesDaysGraph(err, gameData, userData, startDate, endDate, resp
 	responder.send(graphInfo);
 }
 
-// Today Graph Functions 
+// Today Graph Functions
 function todayGraph(err, userData, graphOptions, responder){
 	/*
 	Given a user, will get all the games they have played today (in there timezone)
@@ -198,33 +202,33 @@ function todayGraph(err, userData, graphOptions, responder){
 
 	// Step One: Get current time in clients offset (timezone)
 	var now = moment().utcOffset(offSet*-1);
-	
+
 	var todayFirstMin = now;
 	todayFirstMin = moment(todayFirstMin).seconds(00);
 	todayFirstMin = moment(todayFirstMin).minutes(00);
 	todayFirstMin = moment(todayFirstMin).hours(00);
 	todayFirstMin = moment(todayFirstMin).format();
-	
+
 	var todayLastMin = now;
 	todayLastMin = moment(todayLastMin).seconds(59);
 	todayLastMin = moment(todayLastMin).minutes(59);
 	todayLastMin = moment(todayLastMin).hours(23);
 	todayLastMin = moment(todayLastMin).format();
-	
-	
+
+
 
 	// Query Mongo DB for all games between specified dates
 	gameModel.find({$and: [{"userId":userData._id}, {dateTime: {$gt: todayFirstMin, $lt: todayLastMin}}]}).sort({dateTime: -1}).exec(function (err, res){
 		if(err) return console.log(err);
 		analyzeGamesTodayGraph(userData, res, responder);
-	});	
+	});
 }
 function analyzeGamesTodayGraph(userData, gameData, responder){
 	/*
 	Given a list of games will slice them into each hour, so we can output to a graph
 	*/
 	// console.log("Analyzing Player - " + userData.summonerName);
-	
+
 	// Initalise an array of 24 0's
 	// Each point represents a time in the last 24 hours
 	// Each value represents duration (in minutes)
@@ -237,7 +241,7 @@ function analyzeGamesTodayGraph(userData, gameData, responder){
 	gameData.forEach(function(game){
 		// Get game time in client's timezone
 		var a = moment(game.dateTime).utcOffset(offSet*-1);
-		
+
 		var gameDate = a;
 		var hour = moment(gameDate).hours();
 		var duration = Math.round(game.duration / 60);
@@ -247,6 +251,85 @@ function analyzeGamesTodayGraph(userData, gameData, responder){
 	responder.send(tempGraphData);
 }
 
+// All Time Tracked Graph Functions
+function allGraph(err, userData, graphOptions, responder){
+	/*
+	All graph will grab all the games the player has played, GROUPING by day in the client's timezone
+	Will select earliest game and graph from that date to the current date
+	*/
+	gameModel.aggregate([
+		// Only use games from this user
+		{ $match : { userId : userData._id}},
+		// Sync game time's to users timezone
+		{ $project : { gameTimeLocal: { $subtract : [ "$dateTime", userData.offset*1000*60] } , duration : "$duration"} }, // this is (-4)
+		{ $group : {
+		// Group by date
+		   _id : { year: { $year : "$gameTimeLocal" }, month: { $month : "$gameTimeLocal" },day: { $dayOfMonth : "$gameTimeLocal" }},
+		   totalSeconds : { $sum: "$duration"}
+		}},
+		{ $sort: {_id: 1}
+		}],
+		function (err, res){
+		if(err);
+		console.log(res);
+		analyzeAllGraph(userData, res, graphOptions, responder);
+	})
+}
+
+function analyzeAllGraph(userData, gameData, graphOptions, responder){
+	/*
+	Given a list of dates with corresponding durations in seconds
+	Generates an array of data, length = currDate - firstGameDate
+	*/
+
+	console.log("Game Data - " + gameData);
+	var firstGame = gameData[0];
+	var firstGameDates = firstGame._id
+	var firstGameDate = Date.UTC(firstGameDates.year, firstGameDates.month-1, firstGameDates.day);
+
+	var clientNowDate = Date.UTC(graphOptions.clientYear, graphOptions.clientMonth-1, graphOptions.clientDay);
+
+	var oneDay = 24*60*60*1000;
+	// totalDP's = totalDaysBetween firstGameDate and Now + 1?
+	// Add one as lets say they have only been tracked for one day, 01/01/09 - 01/01/09 = 0 days difference
+	var totalDataPoints = Math.round(Math.abs((firstGameDate - clientNowDate)/(oneDay))) + 1;
+	var allGraphDataPoints = [];
+
+	for(var i = 0; i < totalDataPoints; i++){
+		allGraphDataPoints[i] = 0;
+	}
+
+	gameData.forEach(function(game){
+		// Loop over each game
+		var gameDateObjects = game._id;
+
+		// -1 from gameDateObjects, as it is in standard month format 1 = january, where Date.UTC wants format 0 = january
+		var gameDate = Date.UTC(gameDateObjects.year, gameDateObjects.month-1, gameDateObjects.day);
+
+		// Get what datapoint this is (by getting how many days between this game and startDate)
+		var daysFromStartDate = Math.round(Math.abs((firstGameDate - gameDate)/(oneDay)));
+
+		// Log actual minutes to specified datapoint
+		var durationHours = Math.round(game.totalSeconds / 60) / 60;
+		durationHours = Math.round(durationHours * 100) / 100;
+		allGraphDataPoints[daysFromStartDate] = durationHours;
+	});
+
+	var graphInfo = {
+		// need first game date for highcharts inital date to start labels from
+		firstGameDateYear : firstGameDates.year,
+		firstGameDateMonth : firstGameDates.month,
+		firstGameDateDay : firstGameDates.day,
+		dataPoints : allGraphDataPoints
+	}
+	responder.send(graphInfo);
+}
+
+function daysBetween(dateOne, dateTwo){
+
+}
+
+// Utility Function
 function getHoursBetween(dateOne,dateTwo){
 	/*
 	Gets hours between two date objects
@@ -257,6 +340,10 @@ function getHoursBetween(dateOne,dateTwo){
 	var hours = Math.abs(dateOne.getTime() - dateTwo.getTime()) / (60*60*1000);
 	return hours;
 }
+
+
+
+
 
 module.exports = {
 	getGraph: getGraph
