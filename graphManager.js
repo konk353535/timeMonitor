@@ -271,7 +271,6 @@ function allGraph(err, userData, graphOptions, responder){
 		}],
 		function (err, res){
 		if(err);
-		console.log(res);
 		analyzeAllGraph(userData, res, graphOptions, responder);
 	})
 }
@@ -283,13 +282,17 @@ function analyzeAllGraph(userData, gameData, graphOptions, responder){
 	*/
 
 	console.log("Game Data - " + gameData);
+	// Get date in epoch UTC for first game played
 	var firstGame = gameData[0];
 	var firstGameDates = firstGame._id
 	var firstGameDate = Date.UTC(firstGameDates.year, firstGameDates.month-1, firstGameDates.day);
 
+	// Get date in epoch UTC for client's current time zone
 	var clientNowDate = Date.UTC(graphOptions.clientYear, graphOptions.clientMonth-1, graphOptions.clientDay);
 
+	// Milliseconds in a day for getting the days between two dates
 	var oneDay = 24*60*60*1000;
+
 	// totalDP's = totalDaysBetween firstGameDate and Now + 1?
 	// Add one as lets say they have only been tracked for one day, 01/01/09 - 01/01/09 = 0 days difference
 	var totalDataPoints = Math.round(Math.abs((firstGameDate - clientNowDate)/(oneDay))) + 1;
@@ -322,6 +325,7 @@ function analyzeAllGraph(userData, gameData, graphOptions, responder){
 		firstGameDateDay : firstGameDates.day,
 		dataPoints : allGraphDataPoints
 	}
+	// Output graphInfo via responder, will arrive at client's pc where the angular controller will interprate the data to produce a graph
 	responder.send(graphInfo);
 }
 
