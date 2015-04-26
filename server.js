@@ -27,7 +27,13 @@ var cronManager = require("./cronManager.js");
 var userAddManager = require("./userAddManager.js");
 
 var statManager = require("./statManager.js");
-statManager.getStats("iyvy", "oce", "recordDay", "");
+
+
+
+app.post('/stat', function(req,res){
+	statManager.getStats(req.body.name, req.body.server, req.body.statType, res);
+})
+
 
 app.get('/', function (req, res) {
 	res.send('Hello World');
