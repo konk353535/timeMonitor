@@ -1,6 +1,6 @@
 
 
-var myApp = angular.module('myCharts', ["chart.js", "ngRoute"]);
+var myApp = angular.module('myCharts', ["chart.js", "ngRoute", "highcharts-ng"]);
 
 // Access specific chart controller
 myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', function ($rootScope, $http, $routeParams) {
@@ -20,6 +20,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 		getStatAverageDay();
 
 		updateDailyGraph();
+		updateAllGraph();
 	}
 
 	function getStatRecordDay(){
@@ -70,10 +71,80 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 		$scope.todayChart.labels = ['12', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '1', '2','3','4','5','6','7','8','9','10','11'];
 		$scope.todayChart.series = ['Last 24 Hours'];
 		$scope.todayChart.data= [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]];
-		$scope.options = {
-		      showTooltips: true
+		$scope.todayChart.options = {
+		      showTooltips: true,
+		      bezierCurve: true,
+		      pointDot: true
 		    };
 	}
+	initalAllGraph();
+
+	function initalAllGraph(){
+		$scope.allChart = {};
+
+		var labels = [];
+		var data = [];
+		for(var i = 0; i < 300; i++){
+			labels.push(i.toString());
+			var randomNum = Math.random()*100;
+			data.push(randomNum);
+		}
+
+		// Today graph options
+		$scope.allChart.chartConfig = {
+		    options: {
+		        chart: {
+		            type: 'spline',
+		            zoomType: 'x'
+		        }
+		    },
+		    xAxis: {
+		            type: 'datetime',
+		            minRange: 2 * 24 * 3600000 // fourteen days
+		    },
+		    series: [{
+		        data: data
+		    }],
+		    title: {
+		        text: 'Hello'
+		    },
+
+		    loading: false
+		}
+	}
+	function updateAllGraph(){
+		var n = new Date();
+		var fromDate = new Date(n.getFullYear(), (n.getMonth()), n.getDate(), 0, 0, 0, 0);
+		var toDate = new Date(n.getFullYear(), (n.getMonth()), n.getDate(), 0, 0, 0, 0);
+
+		toDate.setDate(fromDate.getDate() + 1);
+		fromDate.setDate(fromDate.getDate() - 25);
+
+		var offset = new Date().getTimezoneOffset();
+
+		// Request server for mutli day graph data
+
+		$http.post('/graph', {
+			userOffSet: offset,
+			graphType: "daysGraph",
+			startDate: fromDate,
+			endDate: toDate,
+			name: $routeParams["userName"],
+			server: $routeParams["userServer"]
+		}).success(function(response){
+			graphInfo = response;
+
+			console.log("AllChart Data - " + graphInfo.data);
+			console.log("AllChart Labels - " + graphInfo.labels);
+
+			$scope.allChart.chartConfig.series = [{
+			            pointInterval: 24 * 3600 * 1000,
+			            pointStart: Date.UTC(graphInfo.labels[0]),
+				data: graphInfo.data
+			}];
+		});
+	}
+
 	function updateDailyGraph(){
 		// Gets clients timezone offset
 		var offset = new Date().getTimezoneOffset();
