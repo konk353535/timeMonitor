@@ -260,15 +260,55 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 
 			console.log(graphInfo.data);
 			console.log(graphInfo.labels);
+      
+      var graphData = graphInfo.data;
+      var labelData = graphInfo.labels;
+      var seriesData = [];
 
-			$scope.champChart.data = graphInfo.data;
-			$scope.champChart.labels = graphInfo.labels;
+      for(var i = 0; i < graphData.length; i++){
+        seriesData[i] = [labelData[i], graphData[i]];
+      }
+
+      $scope.champChart.chartConfig.series = [{
+        size: '60%',
+        innerSize: '50%',
+        type: 'pie',
+        name: 'Hours Played',
+        data: seriesData
+      }]
+			
 		});
 	}
+
 	function initalMultiDayChampGraph(){
-		// Inital Chart Setting for champion breakdown chart
 		$scope.champChart = {};
-		$scope.champChart.options = {tooltipTemplate: "<%if (label){%><%=label%>: <%}%><%= value %> hr"}
+
+		// Champion Multi Day graph options
+		$scope.champChart.chartConfig = {
+		    options: {
+		        chart: {
+		            type: 'pie'
+		        }
+		    },
+		    title: {
+          text: ''
+        },
+		    plotOptions: {
+          pie: {
+              allowPointSelect: true,
+              cursor: 'pointer',
+              dataLabels: {
+                  enabled: true,
+                  format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                  style: {
+                      color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                  }
+              }
+          }
+        },
+		    loading: false
+		}
+
 	}
 
 }]);
