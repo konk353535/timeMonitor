@@ -54,7 +54,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 	function getStatToday(){
 		// Sum today chart for total playTime today
 		var totalMins = 0;
-		var todayDataPoints = $scope.todayChart.data[0];
+		var todayDataPoints = $scope.todayChart.data;
 		console.log(todayDataPoints);
 		for (var i = 0; i < todayDataPoints.length; i++){
 			totalMins += todayDataPoints[i];
@@ -65,19 +65,94 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 
 
 	function initalDailyGraph(){
-		$scope.todayChart = {};
 
-		// Today graph options
-		$scope.todayChart.labels = ['12', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '1', '2','3','4','5','6','7','8','9','10','11'];
-		$scope.todayChart.series = ['Last 24 Hours'];
-		$scope.todayChart.data= [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]];
-		$scope.todayChart.options = {
-		      showTooltips: true,
-		      bezierCurve: true,
-		      pointDot: true
-		    };
+    $scope.todayChart = {};
+    var data = [];
+
+    // Today graph options
+    $scope.todayChart.chartConfig = {
+        options: {
+            chart: {
+                type: 'spline'
+            }
+        },
+        xAxis: {
+          type: 'datetime',
+          title : {
+            text: 'Time'
+          },
+          tickInterval: 3 * 3600 * 1000,
+          dateTimeLabelFormats : {
+            hour:"%l %P",
+            day:"%l %P",
+          }
+        },
+        yAxis: {
+          title : {
+            text: 'Mins'
+          },
+          min: 0,
+          minRange: 40
+        },
+        series: [{
+            data: data
+        }],
+        title: {
+            text: 'Today Tracked'
+        },
+
+        loading: false
+    }
 	}
-	initalAllGraph();
+  
+	/**
+    * updateDailyGraph() 
+    * requests server for data to graph to the 24 hours graph
+    *
+    *
+    *
+    *
+  **/
+  function updateDailyGraph(){
+    // Gets clients timezone offset
+    var offset = new Date().getTimezoneOffset();
+
+    // Request server for todays graph data
+    $http.post('/graph', {
+
+      userOffSet: offset,
+      graphType: "today",
+      name: $routeParams["userName"],
+      server: $routeParams["userServer"]
+
+    }).success(function(response){
+
+      $scope.todayChart.data = response;
+      var customTodayData = [];
+      var todayChartData = $scope.todayChart.data;
+      console.log(todayChartData.length);
+      for (var i = 0; i < todayChartData.length; i++){
+        customTodayData[i] = [Date.UTC(2000, 1, 1, i), todayChartData[i]];
+      }
+      console.log(customTodayData);
+      $scope.todayChart.chartConfig.series = [{
+        name: 'Mins Played',
+        data: customTodayData,
+        tooltip : {
+          dateTimeLabelFormats : {
+            hour:"%l %P",
+            day:"%l %P",
+          }
+        }
+      }];
+
+      // Update total today played time after we recieve data for today chart
+      getStatToday();
+
+    });
+  }
+
+  initalAllGraph();
 
 	function initalAllGraph(){
 		$scope.allChart = {};
@@ -123,6 +198,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 
 		// Request server for all tracked days graph data
 		$http.post('/graph', {
+
 			userOffSet: offset,
 			graphType: "allGraph",
 			clientYear: now.getFullYear(),
@@ -130,37 +206,23 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 			clientDay: now.getDate(),
 			name: $routeParams["userName"],
 			server: $routeParams["userServer"]
+
 		}).success(function(response){
 			graphInfo = response;
 
 			console.log("AllChart Data - " + graphInfo.dataPoints);
 
 			$scope.allChart.chartConfig.series = [{
-			            pointInterval: 24 * 3600 * 1000,
-			            name: 'Hours Played',
-			            // -1 from firstGameDateMonth, as it is in standard month format 1 = january, where Date.UTC wants format 0 = january
-			            pointStart: Date.UTC(graphInfo.firstGameDateYear, graphInfo.firstGameDateMonth-1, graphInfo.firstGameDateDay),
+        pointInterval: 24 * 3600 * 1000,
+        name: 'Hours Played',
+        // -1 from firstGameDateMonth, as it is in standard month format 1 = january, where Date.UTC wants format 0 = january
+        pointStart: Date.UTC(graphInfo.firstGameDateYear, graphInfo.firstGameDateMonth-1, graphInfo.firstGameDateDay),
 				data: graphInfo.dataPoints
 			}];
 		});
 	}
 
-	function updateDailyGraph(){
-		// Gets clients timezone offset
-		var offset = new Date().getTimezoneOffset();
-
-		// Request server for todays graph data
-		$http.post('/graph', {
-			userOffSet: offset,
-			graphType: "today",
-			name: $routeParams["userName"],
-			server: $routeParams["userServer"]
-		}).success(function(response){
-			$scope.todayChart.data = [response];
-			// Update total today played time after we recieve data for today chart
-			getStatToday();
-		});
-	}
+  
 
 
 
