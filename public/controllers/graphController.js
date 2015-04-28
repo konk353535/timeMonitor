@@ -2,75 +2,137 @@
 
 var myApp = angular.module('myCharts', ["chart.js", "ngRoute", "highcharts-ng"]);
 
-// Access specific chart controller
+// Access Controller for graph page
 myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', function ($rootScope, $http, $routeParams) {
 
+  // Only scope we want is the rootScope
 	$scope = $rootScope;
+
+  // Object so all our stats live in one place
 	$scope.stats = {};
 
-
-	console.log($routeParams);
-
-	initalDailyGraph();
-
+  // If we have pulled users name and server from url
 	if($routeParams.userName){
+
+    // Set userName so we can display on page
 		$rootScope.userName = $routeParams.userName;
 
+    // Request Stats from server
 		getStatRecordDay();
 		getStatAverageDay();
 
+    // Request 4 different graphs data
 		updateDailyGraph();
 		updateAllGraph();
+    updateMultiDayChampGraph();
+    updateMultiDayGraph();
 	}
+  else {
 
+    // Initalize all graphs
+    initalDailyGraph();
+    initalAllGraph();
+    initalMultiDayChampGraph();
+    initalMultiDayGraph();
+  }
+
+  /**
+    * getStatRecordDay() Requests server for most hours played on a single day
+    * Once server responds, displays stat on page
+    *
+  **/
 	function getStatRecordDay(){
-		// Request server for most played day
+
+		// Request server for most played day (time(hr) + date)
 		$http.post('/stat', {
+
+      // Pass server users name and server
 			name: $routeParams["userName"],
 			server: $routeParams["userServer"],
+
+      // Store what type of stat we want
 			statType: "recordDay"
+
 		}).success(function(res){
+
 			console.log("Stat - " + res);
-			$scope.stats.recordDayMinutes = res.recordMinutes;
-			var recordDate = new Date();
+			
+      // Set # minutes played on record day
+      $scope.stats.recordDayMinutes = res.recordMinutes;
+			
+      // Create date of recordDay
+      var recordDate = new Date();
 			recordDate.setFullYear(res.year);
 			recordDate.setMonth(res.month - 1);
 			recordDate.setDate(res.day);
-			$scope.stats.recordDayDate = recordDate;
-		});
-	}
-	function getStatAverageDay(){
-		// Request server for most average day
-		$http.post('/stat', {
-			name: $routeParams["userName"],
-			server: $routeParams["userServer"],
-			statType: "averageDay"
-		}).success(function(res){
-			console.log("AvgMinDay - " + res);
-			$scope.stats.averageDayMinutes = res[0];
+			
+      // Show date of recordDay on page
+      $scope.stats.recordDayDate = recordDate;
+
 		});
 	}
 
+  /**
+    * getStatAverageDay() Requests server for the average hours, player spends 
+    * per day Total Tracked time / (Days between oldest game and today) 
+    *
+    *
+  **/
+	function getStatAverageDay(){
+
+		// Request server for average day (mins)
+		$http.post('/stat', {
+
+      // Pass server userName and server
+			name: $routeParams["userName"],
+			server: $routeParams["userServer"],
+
+      // Store what type of stat i want
+			statType: "averageDay"
+
+		}).success(function(res){
+
+			// Display number given from server to the page
+			$scope.stats.averageDayMinutes = res[0];
+
+		});
+	}
+
+  /**
+    * getStatToday Gets the total played time today
+    * Don't have to req server as already have today information 
+    * From the 24 hour graph
+    *
+  **/
 	function getStatToday(){
-		// Sum today chart for total playTime today
+		
 		var totalMins = 0;
+
+    // Get all time played today from 24 hour graph
 		var todayDataPoints = $scope.todayChart.data;
-		console.log(todayDataPoints);
+		
+    // Sum all datapoints
 		for (var i = 0; i < todayDataPoints.length; i++){
 			totalMins += todayDataPoints[i];
 		}
 
+    // Load Calculated sum to page
 		$scope.stats.todayMinutes = totalMins;
 	}
 
-
+  /**
+    * initalDailyGraph() sets default setting for today graph
+    *
+    *
+  **/
 	function initalDailyGraph(){
 
+    // Create object to store all info about Today graph
     $scope.todayChart = {};
-    var data = [];
 
     // Today graph options
     $scope.todayChart.chartConfig = {
+        // Type of graph
         options: {
             chart: {
                 type: 'spline'
@@ -81,8 +143,10 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
           title : {
             text: 'Time'
           },
+          // Have a label every 3 hours
           tickInterval: 3 * 3600 * 1000,
           dateTimeLabelFormats : {
+            // Only show hour (am/pm)
             hour:"%l %P",
             day:"%l %P",
           }
@@ -91,105 +155,132 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
           title : {
             text: 'Mins'
           },
+          // Set min so we have no -10 range
           min: 0,
+          // Set range to min amnt so 0 isn't vertically aligned
           minRange: 40
         },
         series: [{
-            data: data
+            data: []
         }],
         title: {
             text: 'Today Tracked'
         },
-
-        loading: false
+        // Set loading to true until we update the graph
+        loading: true
     }
 	}
-  
+
 	/**
     * updateDailyGraph() 
-    * requests server for data to graph to the 24 hours graph
-    *
-    *
-    *
+    * requests server for data to graph the 24 hours graph
     *
   **/
   function updateDailyGraph(){
+
     // Gets clients timezone offset
     var offset = new Date().getTimezoneOffset();
 
     // Request server for todays graph data
     $http.post('/graph', {
 
+      // Store client's timezone so graph is in there timezone
       userOffSet: offset,
+
+      // Let server know what type of graph we want
       graphType: "today",
+
+      // Store users name and server
       name: $routeParams["userName"],
       server: $routeParams["userServer"]
 
     }).success(function(response){
 
+      // Store response from server 
       $scope.todayChart.data = response;
+
+      // Empty array for making custom labels
       var customTodayData = [];
       var todayChartData = $scope.todayChart.data;
-      console.log(todayChartData.length);
+
       for (var i = 0; i < todayChartData.length; i++){
+        // For each point load in a date with specific time
         customTodayData[i] = [Date.UTC(2000, 1, 1, i), todayChartData[i]];
       }
-      console.log(customTodayData);
+
+      console.log("Today Date Data - " + customTodayData);
+
       $scope.todayChart.chartConfig.series = [{
         name: 'Mins Played',
         data: customTodayData,
         tooltip : {
           dateTimeLabelFormats : {
+            // Make tooltip display 7 am (hr am/pm)
             hour:"%l %P",
             day:"%l %P",
           }
         }
       }];
 
-      // Update total today played time after we recieve data for today chart
+      // Data loaded, remove loading overlay
+      $scope.todayChart.chartConfig.loading = false;
+
+      // Update today stat now as depedant on today chart data
       getStatToday();
 
     });
   }
 
-  initalAllGraph();
+  
 
 	function initalAllGraph(){
+    // Object to store all info for AllGraph
 		$scope.allChart = {};
 
-		var data = [];
-
-		// Today graph options
+		// All graph options
 		$scope.allChart.chartConfig = {
 		    options: {
 		        chart: {
 		            type: 'spline',
+
+                // Zoomable on the x-axis
 		            zoomType: 'x'
 		        }
 		    },
 		    xAxis: {
+                // set xAxis to datetime, so we can use timesteps
 		            type: 'datetime',
 		            title : {
 		            	text: 'Date'
 		            },
-		            minRange: 4 * 24 * 3600000 // four days
+                // Set max zoom to 4 data points (4 days)
+		            minRange: 4 * 24 * 3600000 
 		    },
 		    yAxis: {
 		    	title : {
 		    		text: 'Hours'
 		    	},
+          // Min 0 so we don't have -10 range, (can't have negative time)
 		    	min: 0
 		    },
 		    series: [{
-		        data: data
+		        data: []
 		    }],
 		    title: {
-		        text: 'All Time Tracked'
+		        text: ''
 		    },
 
-		    loading: false
+        // Set loading to true, as we haven't found data yet
+		    loading: true
 		}
 	}
+
+  /**
+    * updateAllGraph() Requests server for all data
+    * Each datapoint is a day
+    *
+    *
+  **/
 	function updateAllGraph(){
 
 		var offset = new Date().getTimezoneOffset();
@@ -199,178 +290,288 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 		// Request server for all tracked days graph data
 		$http.post('/graph', {
 
+      // Useroffset so server know's my timezone
 			userOffSet: offset,
-			graphType: "allGraph",
+
+			// Let server know what graphType we want
+      graphType: "allGraph",
+
+      // Send Year, Month, Day of client
 			clientYear: now.getFullYear(),
 			clientMonth: (now.getMonth()+1),
 			clientDay: now.getDate(),
+
+      // User name and server
 			name: $routeParams["userName"],
 			server: $routeParams["userServer"]
 
 		}).success(function(response){
+
+      // Store server response
 			graphInfo = response;
 
 			console.log("AllChart Data - " + graphInfo.dataPoints);
 
 			$scope.allChart.chartConfig.series = [{
+        
+        // Each point is 24 hours
         pointInterval: 24 * 3600 * 1000,
+
+        // Name of tooltip Eg on hover Hours Played : Value
         name: 'Hours Played',
+
         // -1 from firstGameDateMonth, as it is in standard month format 1 = january, where Date.UTC wants format 0 = january
         pointStart: Date.UTC(graphInfo.firstGameDateYear, graphInfo.firstGameDateMonth-1, graphInfo.firstGameDateDay),
+
+        // Load in dataPoints
 				data: graphInfo.dataPoints
+
 			}];
+
+      // Have datapoints, set loading to false
+      $scope.allChart.chartConfig.loading = false;
+
 		});
 	}
 
   
 
-
-
-	if($routeParams.userName){
-		initalMultiDayGraph();
-		updateMultiDayGraph();
-	}
-	else {
-		initalMultiDayGraph();
-	}
-
-	$scope.getGraph = function(){
-		console.log($scope.weekChart.data);
-	}
-
+  /**
+    * initalMultiDayGraph() Initalizes setting for Week graph
+    *
+    *
+    *
+  **/
 	function initalMultiDayGraph(){
-		/*
-		Still have to update this functions commenting and spacing (need datepicker)
-		Controller for multi day (7 days atm) bar chart
-		*/
-		$scope.weekChart = {};
+		
+    // Object to store all info for weekChart in one place
+    $scope.weekChart = {};
 
-		// Mutli day Inital graph options
-		$scope.weekChart.labels = ['0','1','2','3','4'];
-		$scope.weekChart.series = ['Last 7 Days'];
-		$scope.weekChart.data = [[0, 0, 0, 0]];
-		$scope.weekChart.options = {
-		      showTooltips: true
-		};
+    // week graph options
+    $scope.weekChart.chartConfig = {
+        options: {
+            chart: {
+                type: 'spline'
+            }
+        },
+        xAxis: {
+                type: 'datetime',
+                title : {
+                  text: 'Date'
+                }
+        },
+        yAxis: {
+          title : {
+            text: 'Mins'
+          },
+
+          // Min y-value of 0 so no negative range (can't have -time)
+          min: 0
+        },
+        series: [{
+            data: []
+        }],
+        title: {
+            text: ''
+        },
+
+        // Loading true as we don't have data yet
+        loading: true
+    }
 	}
-	function updateMultiDayGraph(){
-		var n = new Date();
-		var fromDate = new Date(n.getFullYear(), (n.getMonth()), n.getDate(), 0, 0, 0, 0);
-		var toDate = new Date(n.getFullYear(), (n.getMonth()), n.getDate(), 0, 0, 0, 0);
 
+  /**
+    * updateMultiDayGraph Requests server for data for weekGraph
+    * Once recieves weekGraph data, updates graph to display new info
+  **/
+	function updateMultiDayGraph(){
+
+    // Get current date for client
+		var n = new Date();
+		var fromDate = new Date(
+      n.getFullYear(), (n.getMonth()), n.getDate(), 0, 0, 0, 0);
+		var toDate = new Date(
+      n.getFullYear(), (n.getMonth()), n.getDate(), 0, 0, 0, 0);
+
+    // Set From date (date 7 days ago)
+    // Set To date (end of today)
 		toDate.setDate(fromDate.getDate() + 1);
 		fromDate.setDate(fromDate.getDate() - 6);
 
+    // Store timezone for server
 		var offset = new Date().getTimezoneOffset();
 
 		// Request server for mutli day graph data
-
 		$http.post('/graph', {
+
+      // Store timezone so server get's client's timezone days
 			userOffSet: offset,
+
+      // What graph do we want
 			graphType: "daysGraph",
+
+      // Date's to graph
 			startDate: fromDate,
 			endDate: toDate,
+
+      // Users name and server
 			name: $routeParams["userName"],
 			server: $routeParams["userServer"]
+
 		}).success(function(response){
-			graphInfo = response;
-
-			console.log(graphInfo.data);
-			console.log(graphInfo.labels);
-
-			$scope.weekChart.data = [graphInfo.data];
-			$scope.weekChart.labels = graphInfo.labels;
-
-			console.log($scope.weekChart.data);
-		});
-	}
-
-	initalMultiDayChampGraph();
-
-	if($routeParams.userName){
-
-		updateMultiDayChampGraph();
-	}
-
-	function updateMultiDayChampGraph(){
-		/*
-		Still have to update this functions commenting and spacing (need datepicker)
-		Controller for champion pie chart
-		*/
-		var n = new Date();
-		var fromDate = new Date(n.getFullYear(), (n.getMonth()), n.getDate(), 0, 0, 0, 0);
-		var toDate = new Date(n.getFullYear(), (n.getMonth()), n.getDate(), 23, 59, 59, 99);
-		toDate.setDate(fromDate.getDate());
-		fromDate.setDate(fromDate.getDate() - 6);
-		console.log("ToDate = " + toDate);
-		console.log("fromDate = " + fromDate);
-
-
-		var offset = new Date().getTimezoneOffset();
-
-		// Request server for mutli day graph data
-
-		$http.post('/graph', {
-			userOffSet: offset,
-			graphType: "championDaysGraph",
-			startDate: fromDate,
-			endDate: toDate,
-			name: $routeParams["userName"],
-			server: $routeParams["userServer"]
-		}).success(function(response){
-			graphInfo = response;
-
-			console.log(graphInfo.data);
-			console.log(graphInfo.labels);
-      
-      var graphData = graphInfo.data;
-      var labelData = graphInfo.labels;
-      var seriesData = [];
-
-      for(var i = 0; i < graphData.length; i++){
-        seriesData[i] = [labelData[i], graphData[i]];
-      }
-
-      $scope.champChart.chartConfig.series = [{
-        size: '60%',
-        innerSize: '50%',
-        type: 'pie',
-        name: 'Hours Played',
-        data: seriesData
-      }]
 			
+      // Store server reponse
+      graphInfo = response;
+
+      // Output response
+			console.log(graphInfo.data);
+			console.log(graphInfo.labels);
+
+			$scope.weekChart.chartConfig.series = [{
+        // Time interval is 24 hours (day)
+        pointInterval: 24 * 3600 * 1000,
+
+        // Name on tooltip is Hours Played: Value
+        name: 'Hours Played',
+
+        // Date to start labels from
+        pointStart: Date.UTC(
+          fromDate.getFullYear(),
+          fromDate.getMonth(),
+          fromDate.getDate()),
+
+        // Set graph data to data from server
+        data: graphInfo.data
+      }];
+
+      // Remove loading overlay as we've loaded stuff
+      $scope.weekChart.chartConfig.loading = false;
+
 		});
 	}
 
-	function initalMultiDayChampGraph(){
-		$scope.champChart = {};
+  /**
+    * initalMultiDayChampGraph() initalizes graph settings for pie graph
+    *
+  **/
+  function initalMultiDayChampGraph(){
 
-		// Champion Multi Day graph options
-		$scope.champChart.chartConfig = {
-		    options: {
-		        chart: {
-		            type: 'pie'
-		        }
-		    },
-		    title: {
+    // Object to store all info for ChampGraph
+    $scope.champChart = {};
+
+    // Champion Multi Day graph options
+    $scope.champChart.chartConfig = {
+        options: {
+            chart: {
+
+                // Pie charts are cool!
+                type: 'pie'
+            }
+        },
+        title: {
+
+          // Don't need no man, or title
           text: ''
         },
-		    plotOptions: {
+        plotOptions: {
           pie: {
               allowPointSelect: true,
               cursor: 'pointer',
               dataLabels: {
                   enabled: true,
                   format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                  // Black theme
                   style: {
                       color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
                   }
               }
           }
         },
-		    loading: false
-		}
 
+        // Haven't got data from server yet, so still loading
+        loading: true
+    }
+
+  }
+
+  /**
+    * updateMultiDayChampGraph() request server for champion played data
+    * Once recieves graph the data given on a pie chart
+    *
+  **/
+	function updateMultiDayChampGraph(){
+
+    // Get current date for client
+		var n = new Date();
+		var fromDate = new Date(
+      n.getFullYear(), (n.getMonth()), n.getDate(), 0, 0, 0, 0);
+		var toDate = new Date(
+      n.getFullYear(), (n.getMonth()), n.getDate(), 23, 59, 59, 99);
+
+
+		toDate.setDate(fromDate.getDate() + 1);
+		fromDate.setDate(fromDate.getDate() - 6);
+
+    // Store users timezone
+		var offset = new Date().getTimezoneOffset();
+
+		// Request server for mutli day graph data
+		$http.post('/graph', {
+
+      // Pass users timezone to server
+			userOffSet: offset,
+
+      // Tell server what graphType we want
+			graphType: "championDaysGraph",
+
+      // Store dates for server to use
+			startDate: fromDate,
+			endDate: toDate,
+
+      // Users name and password
+			name: $routeParams["userName"],
+			server: $routeParams["userServer"]
+
+		}).success(function(response){
+
+      // Store server response
+			graphInfo = response;
+
+      // Output server reponse
+			console.log("Pie Champion Data - " + graphInfo.data);
+			console.log("Pie Champion Labels - " + graphInfo.labels);
+        
+      // Variables for custom array to send to highcharts
+      var graphData = graphInfo.data;
+      var labelData = graphInfo.labels;
+      var seriesData = [];
+
+      for(var i = 0; i < graphData.length; i++){
+        // Each data point is [label, value]
+        seriesData[i] = [labelData[i], graphData[i]];
+      }
+
+      $scope.champChart.chartConfig.series = [{
+        
+        // Size and innersize to make it a doughnut (cut out the middle)
+        size: '60%',
+        innerSize: '50%',
+        
+        // Type of chart is pie
+        type: 'pie',
+
+        // Tooltip is Hours Played: Value
+        name: 'Hours Played',
+
+        // Load in data from server response
+        data: seriesData
+
+      }];
+			
+      // It's Loaded okay
+      $scope.champChart.chartConfig.loading = false;
+
+		});
 	}
 
 }]);
@@ -379,18 +580,21 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 
 myApp.config(function($routeProvider, $locationProvider) {
   $routeProvider
+  // When we find this url
    .when('/user/:userName/:userServer', {
     template: ' ',
+    // Send routeParams to this controller
     controller: 'todayChartCtrl',
     resolve: {
-      // I will cause a 1 second delay
+      // Wait 50 milliseconds before we send params
       delay: function($q, $timeout) {
         var delay = $q.defer();
-        $timeout(delay.resolve, 200);
+        $timeout(delay.resolve, 50);
         return delay.promise;
       }
     }
   })
+  // Irrelivant
   .when('/Book/:bookId/ch/:chapterId', {
     templateUrl: 'chapter.html',
     controller: 'ChapterController'
@@ -401,5 +605,5 @@ myApp.config(function($routeProvider, $locationProvider) {
 });
 
 
-
+// Bootstrap this module with module in controller.js
 angular.bootstrap(document.getElementById("chartApp"), ['myApp', 'myCharts']);
