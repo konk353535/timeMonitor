@@ -99,6 +99,7 @@ function analyzeGames(user, gamesData){
 			var champion = game.championId;
 			var position = stats.playerPosition;
 			var dateCreated = game.createDate;
+			var isWin = stats.win;
 			if(position === undefined){
 				position = 0;
 			}
@@ -107,7 +108,7 @@ function analyzeGames(user, gamesData){
 				currentMaxMatchId = matchId;
 			}
 
-			addGame(user, matchId, timePlayed, champion, position, dateCreated);
+			addGame(user, matchId, timePlayed, champion, position, dateCreated,isWin);
 		}
 		else {
 			// console.log(game.gameId + " < " + lastMatchId);
@@ -127,7 +128,7 @@ function analyzeGames(user, gamesData){
 	user = null;
 }
 
-function addGame(user, newMatchId, newDuration, newChampion, newPosition, dateCreated){
+function addGame(user, newMatchId, newDuration, newChampion, newPosition, dateCreated, isWin){
 	/*
 	Given data will add game to db
 	*/
@@ -137,13 +138,14 @@ function addGame(user, newMatchId, newDuration, newChampion, newPosition, dateCr
 	console.log("DateCreated - " + dateCreatedUtc);
 
 	var newGame = new gameModel({
-		  matchId: newMatchId
-		, dateTime  :  dateCreatedUtc
-		, duration   :   newDuration
-		, champion :  newChampion
-		, position : newPosition
-		, server : user.server
-		, userId : user._id
+		matchId: newMatchId,
+		dateTime  :  dateCreatedUtc,
+		duration   :   newDuration,
+		champion :  newChampion,
+		position : newPosition,
+		server : user.server,
+		userId : user._id,
+		isWin : isWin
 	});
 
 	newGame.save(function (err, newGame) {
