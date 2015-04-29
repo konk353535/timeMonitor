@@ -13,19 +13,16 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 
   // If we have pulled users name and server from url
 	if($routeParams.userName){
+    // Add/Update this user
+    addUser();
 
     // Set userName so we can display on page
 		$rootScope.userName = $routeParams.userName;
 
-    // Request Stats from server
-		getStatRecordDay();
-		getStatAverageDay();
+    // Store server incase we need to re-request data
+    $rootScope.serverName = $routeParams.userServer;
 
-    // Request 4 different graphs data
-		updateDailyGraph();
-		updateAllGraph();
-    updateMultiDayChampGraph();
-    updateMultiDayGraph();
+    updateAllGraphsAndStats();
 	}
   else {
 
@@ -34,6 +31,18 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
     initalAllGraph();
     initalMultiDayChampGraph();
     initalMultiDayGraph();
+  }
+
+  function updateAllGraphsAndStats(){
+    // Request Stats from server
+    getStatRecordDay();
+    getStatAverageDay();
+
+    // Request 4 different graphs data
+    updateDailyGraph();
+    updateAllGraph();
+    updateMultiDayChampGraph();
+    updateMultiDayGraph();
   }
 
   /**
@@ -135,7 +144,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
         // Type of graph
         options: {
             chart: {
-                type: 'spline'
+                type: 'areaspline'
             }
         },
         xAxis: {
@@ -164,7 +173,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
             data: []
         }],
         title: {
-            text: 'Today Tracked'
+            text: ''
         },
         // Set loading to true until we update the graph
         loading: true
@@ -196,38 +205,40 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 
     }).success(function(response){
 
-      // Store response from server 
-      $scope.todayChart.data = response;
+      // Make sure we got graph data, not an error message or null
+      if(response && response != "Error: Specified user could not be found"){
+        // Store response from server 
+        $scope.todayChart.data = response;
 
-      // Empty array for making custom labels
-      var customTodayData = [];
-      var todayChartData = $scope.todayChart.data;
+        // Empty array for making custom labels
+        var customTodayData = [];
+        var todayChartData = $scope.todayChart.data;
 
-      for (var i = 0; i < todayChartData.length; i++){
-        // For each point load in a date with specific time
-        customTodayData[i] = [Date.UTC(2000, 1, 1, i), todayChartData[i]];
-      }
-
-      console.log("Today Date Data - " + customTodayData);
-
-      $scope.todayChart.chartConfig.series = [{
-        name: 'Mins Played',
-        data: customTodayData,
-        tooltip : {
-          dateTimeLabelFormats : {
-            // Make tooltip display 7 am (hr am/pm)
-            hour:"%l %P",
-            day:"%l %P",
-          }
+        for (var i = 0; i < todayChartData.length; i++){
+          // For each point load in a date with specific time
+          customTodayData[i] = [Date.UTC(2000, 1, 1, i), todayChartData[i]];
         }
-      }];
 
-      // Data loaded, remove loading overlay
-      $scope.todayChart.chartConfig.loading = false;
+        console.log("Today Date Data - " + customTodayData);
 
-      // Update today stat now as depedant on today chart data
-      getStatToday();
+        $scope.todayChart.chartConfig.series = [{
+          name: 'Mins Played',
+          data: customTodayData,
+          tooltip : {
+            dateTimeLabelFormats : {
+              // Make tooltip display 7 am (hr am/pm)
+              hour:"%l %P",
+              day:"%l %P",
+            }
+          }
+        }];
 
+        // Data loaded, remove loading overlay
+        $scope.todayChart.chartConfig.loading = false;
+
+        // Update today stat now as depedant on today chart data
+        getStatToday();
+      }
     });
   }
 
@@ -241,7 +252,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 		$scope.allChart.chartConfig = {
 		    options: {
 		        chart: {
-		            type: 'spline',
+		            type: 'areaspline',
 
                 // Zoomable on the x-axis
 		            zoomType: 'x'
@@ -307,30 +318,32 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 
 		}).success(function(response){
 
-      // Store server response
-			graphInfo = response;
+      if(response && response != "Error: Specified user could not be found"){
 
-			console.log("AllChart Data - " + graphInfo.dataPoints);
+        // Store server response
+  			graphInfo = response;
 
-			$scope.allChart.chartConfig.series = [{
-        
-        // Each point is 24 hours
-        pointInterval: 24 * 3600 * 1000,
+  			console.log("AllChart Data - " + graphInfo.dataPoints);
 
-        // Name of tooltip Eg on hover Hours Played : Value
-        name: 'Hours Played',
+  			$scope.allChart.chartConfig.series = [{
+          
+          // Each point is 24 hours
+          pointInterval: 24 * 3600 * 1000,
 
-        // -1 from firstGameDateMonth, as it is in standard month format 1 = january, where Date.UTC wants format 0 = january
-        pointStart: Date.UTC(graphInfo.firstGameDateYear, graphInfo.firstGameDateMonth-1, graphInfo.firstGameDateDay),
+          // Name of tooltip Eg on hover Hours Played : Value
+          name: 'Hours Played',
 
-        // Load in dataPoints
-				data: graphInfo.dataPoints
+          // -1 from firstGameDateMonth, as it is in standard month format 1 = january, where Date.UTC wants format 0 = january
+          pointStart: Date.UTC(graphInfo.firstGameDateYear, graphInfo.firstGameDateMonth-1, graphInfo.firstGameDateDay),
 
-			}];
+          // Load in dataPoints
+  				data: graphInfo.dataPoints
 
-      // Have datapoints, set loading to false
-      $scope.allChart.chartConfig.loading = false;
+  			}];
 
+        // Have datapoints, set loading to false
+        $scope.allChart.chartConfig.loading = false;
+      }
 		});
 	}
 
@@ -351,7 +364,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
     $scope.weekChart.chartConfig = {
         options: {
             chart: {
-                type: 'spline'
+                type: 'areaspline'
             }
         },
         xAxis: {
@@ -420,33 +433,35 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 
 		}).success(function(response){
 			
-      // Store server reponse
-      graphInfo = response;
+      if(response && response != "Error: Specified user could not be found"){
 
-      // Output response
-			console.log(graphInfo.data);
-			console.log(graphInfo.labels);
+        // Store server reponse
+        graphInfo = response;
 
-			$scope.weekChart.chartConfig.series = [{
-        // Time interval is 24 hours (day)
-        pointInterval: 24 * 3600 * 1000,
+        // Output response
+  			console.log(graphInfo.data);
+  			console.log(graphInfo.labels);
 
-        // Name on tooltip is Hours Played: Value
-        name: 'Hours Played',
+  			$scope.weekChart.chartConfig.series = [{
+          // Time interval is 24 hours (day)
+          pointInterval: 24 * 3600 * 1000,
 
-        // Date to start labels from
-        pointStart: Date.UTC(
-          fromDate.getFullYear(),
-          fromDate.getMonth(),
-          fromDate.getDate()),
+          // Name on tooltip is Hours Played: Value
+          name: 'Mins Played',
 
-        // Set graph data to data from server
-        data: graphInfo.data
-      }];
+          // Date to start labels from
+          pointStart: Date.UTC(
+            fromDate.getFullYear(),
+            fromDate.getMonth(),
+            fromDate.getDate()),
 
-      // Remove loading overlay as we've loaded stuff
-      $scope.weekChart.chartConfig.loading = false;
+          // Set graph data to data from server
+          data: graphInfo.data
+        }];
 
+        // Remove loading overlay as we've loaded stuff
+        $scope.weekChart.chartConfig.loading = false;
+      }
 		});
 	}
 
@@ -534,45 +549,70 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 
 		}).success(function(response){
 
-      // Store server response
-			graphInfo = response;
+      if(response && response != "Error: Specified user could not be found"){
 
-      // Output server reponse
-			console.log("Pie Champion Data - " + graphInfo.data);
-			console.log("Pie Champion Labels - " + graphInfo.labels);
-        
-      // Variables for custom array to send to highcharts
-      var graphData = graphInfo.data;
-      var labelData = graphInfo.labels;
-      var seriesData = [];
+        // Store server response
+  			graphInfo = response;
 
-      for(var i = 0; i < graphData.length; i++){
-        // Each data point is [label, value]
-        seriesData[i] = [labelData[i], graphData[i]];
+        // Output server reponse
+  			console.log("Pie Champion Data - " + graphInfo.data);
+  			console.log("Pie Champion Labels - " + graphInfo.labels);
+          
+        // Variables for custom array to send to highcharts
+        var graphData = graphInfo.data;
+        var labelData = graphInfo.labels;
+        var seriesData = [];
+
+        for(var i = 0; i < graphData.length; i++){
+          // Each data point is [label, value]
+          seriesData[i] = [labelData[i], graphData[i]];
+        }
+
+        $scope.champChart.chartConfig.series = [{
+          
+          // Size and innersize to make it a doughnut (cut out the middle)
+          size: '60%',
+          innerSize: '50%',
+          
+          // Type of chart is pie
+          type: 'pie',
+
+          // Tooltip is Hours Played: Value
+          name: 'Hours Played',
+
+          // Load in data from server response
+          data: seriesData
+
+        }];
+  			
+        // It's Loaded okay
+        $scope.champChart.chartConfig.loading = false;
       }
-
-      $scope.champChart.chartConfig.series = [{
-        
-        // Size and innersize to make it a doughnut (cut out the middle)
-        size: '60%',
-        innerSize: '50%',
-        
-        // Type of chart is pie
-        type: 'pie',
-
-        // Tooltip is Hours Played: Value
-        name: 'Hours Played',
-
-        // Load in data from server response
-        data: seriesData
-
-      }];
-			
-      // It's Loaded okay
-      $scope.champChart.chartConfig.loading = false;
-
 		});
 	}
+
+  /**
+    * addUser() attempts to add/update this user
+    *
+    *
+  **/
+  function addUser(){
+    var offset = new Date().getTimezoneOffset();
+
+    var requestInfo = {
+        name : $routeParams.userName,
+        server: $routeParams.userServer,
+        reqOffset : offset
+    };
+
+    $http.post('/newPlayer', requestInfo).success(function(response){
+        console.log(response);
+        if(response == "ReGraphPlz"){
+          updateAllGraphsAndStats();
+        }
+    });
+  }
+
 
 }]);
 
@@ -603,7 +643,3 @@ myApp.config(function($routeProvider, $locationProvider) {
   // configure html5 to get links working on jsfiddle
   $locationProvider.html5Mode(true);
 });
-
-
-// Bootstrap this module with module in controller.js
-angular.bootstrap(document.getElementById("chartApp"), ['myApp', 'myCharts']);
