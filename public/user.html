@@ -19,32 +19,25 @@
 </head>
 <body>
 
-<div ng-app="myApp">
-  <div class="container" ng-controller="AppCtrl">
-
-  </div>
-</div>
-
 <div ng-app="myCharts" id="chartApp" ng-controller="todayChartCtrl">
 
   <div class="container">
-    <h1>Summoner {{userName}}</h1>
-
+    <div class="page-header">
+      <h1>Summoner {{userName}}</h1>
+    </div>
     <div ng-view></div>
 
     <div class="row" >
       <div class="col-md-6" style="text-align:center">
-        <h2>Chart Today</h2>
-        <canvas id="line" class="chart chart-line" data="todayChart.data" labels="todayChart.labels" legend="true" series="todayChart.series" options="todayChart.options" click="onClick"></canvas>
+        <h2>Today</h2>
+        <highchart id="chart3" config="todayChart.chartConfig" class="span10">
+        </highchart>
       </div>
       <div class="col-md-6" style="text-align:center">
-        <h2>Stats</h2>
-        <h3>Today</h3>
-        <h4>{{stats.todayMinutes/60 | number:2}} hr</h4>
-        <h3>Daily Average </h3>
-        <h4>{{stats.averageDayMinutes/60 | number:2}} hr</h4>
-        <h3>Record Day</h3>
-        <h4>{{stats.recordDayMinutes/60 | number:2}} hr<small>({{stats.recordDayDate | date : 'mediumDate'}})</small></h4>
+        <h2>Stats Today</h2>
+        <h3>Today : {{stats.todayMinutes/60 | number:2}} hr</h3>
+        <h3>Average Day : {{stats.averageDayMinutes/60 | number:2}} hr</h3>
+        <h3>Record : {{stats.recordDayMinutes/60 | number:2}} hr<small>({{stats.recordDayDate | date : 'mediumDate'}})</small></h3>
       </div>
     </div>
 
@@ -54,15 +47,16 @@
   <div class="container">
     <div class="row" >
       <div class="col-md-6" style="text-align:center">
-        <h2>Chart 7 Days</h2>
-        <canvas id="bar" class="chart chart-line" data="weekChart.data" labels="weekChart.labels" legend="true" options="weekChart.options" click="onClick"></canvas>
+        <h2>Last 7 Days</h2>
+        <highchart id="chart3" config="weekChart.chartConfig" class="span10">
+        </highchart>
       </div>
       <div class="col-md-6" style="text-align:center">
         <h2>Champions (7 Days)</h2>
-       <canvas id="doughnut" class="chart chart-doughnut" data="champChart.data" labels="champChart.labels" options="champChart.options"></canvas>
+        <highchart id="chart2" config="champChart.chartConfig" class="span10"></highchart>
       </div>
     </div>
-    <div class="row">
+    <div class="row" style="text-align:center">
       <div class="col-md-12">
         <h2>All Tracked </h2>
         <highchart id="chart1" config="allChart.chartConfig" class="span10"></highchart>
@@ -78,14 +72,13 @@
 <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0-rc.0/angular.min.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0-rc.0/angular-route.js"></script>
 <!-- Charting requirments highcharts -->
-<script src="http://code.highcharts.com/highcharts.src.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highcharts/4.1.5/highcharts.js"></script>
 <script src="highcharts-ng.js"></script>
 <!-- Charting requirments Chrat Js-->
 <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
 <script src="angular-chart.js"></script>
 <!-- Controllers -->
-<script src="controllers/controller.js"></script>
 <script src="controllers/graphController.js"></script>
 </body>
 </html>
