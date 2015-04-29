@@ -26,12 +26,16 @@ var getStats = function getStat(userName, userServer, statType, responder){
     userModel.findOne({"summonerName":userName, "server":userServer}).exec(function (err, userData) {
         if (err) return console.error(err);
         if(userData !== null){
-            // User Found
-            if(statType == "recordDay"){
-                recordDay(null, userData, responder);
-            }
-            else if(statType == "averageDay"){
-                averageDay(null, userData, responder);
+            // Check user has some data
+            if(userData.lastMatchId > 25){
+
+                // User Found
+                if(statType == "recordDay"){
+                    recordDay(null, userData, responder);
+                }
+                else if(statType == "averageDay"){
+                    averageDay(null, userData, responder);
+                }
             }
         }
         else{
