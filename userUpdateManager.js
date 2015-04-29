@@ -13,8 +13,10 @@ var moment = require('moment-timezone');
 var updateUser = function getUserToUpdate(){
 
 	console.log("Started - " + new Date());
-	// Will get a list of users who haven't had there match history read in the last 4 hours
-	userModel.find({updated: false}).sort({lastMatchId: 1}).limit(105).exec(function (err, userData) {
+	
+	// Will select a list of users to update
+	// Must be not new users (lastMatchId > 25) as new users are updated seperately
+	userModel.find({updated: false, lastMatchId:{$gt:25}}).sort({lastMatchId: 1}).limit(105).exec(function (err, userData) {
 		if (err) return console.error(err);
 		// Got the user data commander!
 		// Make sure we atleast found one
@@ -26,7 +28,7 @@ var updateUser = function getUserToUpdate(){
 				// Remove from array so we know when we have processed all users
 				userData.splice(0, 1);
 
-				scanUserGames(user);
+				scanUserGames(user, null);
 			}
 			userData = null;
 			user = null;
@@ -37,7 +39,7 @@ var updateUser = function getUserToUpdate(){
 		}
 	});
 }
-function scanUserGames(user){
+function scanUserGames(user, resToClient){
 	/*
 	Make request for specified user's match history (using game v1.3 API)
 	Pass games found onto an analyzer
@@ -53,7 +55,7 @@ function scanUserGames(user){
 	function (error, response, body) {
 		if (!error && response.statusCode == 200) {
 			console.log("Data Recievied - " + user.summonerName);
-			analyzeGames(user, JSON.parse(response.body));
+			analyzeGames(user, JSON.parse(response.body), resToClient);
 		}
 		else {
 			console.log("Invalid Summoner Name or Server" + user.summonerName + " - " + user.server);
@@ -83,7 +85,7 @@ function updateUserReset(userId){
 	});
 }
 
-function analyzeGames(user, gamesData){
+function analyzeGames(user, gamesData, resToClient){
 	var lastMatchId = user.lastMatchId;
 	// So we can update the last match id of the player later
 	var currentMaxMatchId = 0;
@@ -124,6 +126,14 @@ function analyzeGames(user, gamesData){
 	}
 	// Change updated status, so we know we've scanned this user recently
 	updateUserReset(user._id);
+
+	// Is this a new user update or not
+	if(resToClient !== null){
+
+		// Send graphDataFound to client for regraphing
+		resToClient.send("ReGraphPlz");
+	}
+	
 	gamesData = null;
 	user = null;
 }
@@ -166,8 +176,37 @@ var resetAllUsers = function resetAllUsers(){
 	});
 }
 
+var updateNewUser = function updateNewUser(summonerId, userServer, resToClient){
+	// Multi-Step Process
+	// 1) Find this user in mongodb, if lastMatchId is not 25, end(res updated)
+  	userModel.findOne({"summonerId":summonerId, "server":userServer}).exec(
+	function (err, userData) {
+	    if (err) return console.error(err);
+
+	    // Found the user
+	    if(userData !== null){
+
+	    	// Check if new user or not
+	    	if(userData.lastMatchId == 25){
+	    		console.log(userData);
+	    		console.log("lmID" + userData.lastMatchId);
+	    		// New User
+	    		// 2) If lastMatchId is 25, send this user to update function
+  				scanUserGames(userData, resToClient);
+	    	}
+	    	else {
+
+	    		// Existing User
+	    		resToClient.send("UserUpdated");
+	    	}
+	    }
+
+	});
+}
+
 
 module.exports = {
 	updateUser: updateUser,
-	resetAllUsers: resetAllUsers
+	resetAllUsers: resetAllUsers,
+	updateNewUser : updateNewUser
 }
