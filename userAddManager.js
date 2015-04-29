@@ -5,6 +5,9 @@ var request = require('request');
 // Models for DB interaction
 var userModel = require("./models/userModel.js").userModel;
 
+// User Updater so we can quickly update new users
+var userUpdateManager = require("./userUpdateManager.js");
+
 // New User Functions
 var addUser = function getSummonerId(summonerName, serverName, offset, res){
 
@@ -21,7 +24,7 @@ var addUser = function getSummonerId(summonerName, serverName, offset, res){
 	});
 }
 
-function newUserAdd(playerData, serverName, offset, res){
+function newUserAdd(playerData, serverName, offset, resToClient){
 	/*
 	Adds new user to db, or update's existing users summoner name (incase of name change)
 	*/
@@ -32,14 +35,36 @@ function newUserAdd(playerData, serverName, offset, res){
 	    playerKey = key;
 	  }
 	}
+
 	// Gets user data from JSON object using key
 	playerData = playerData[playerKey];
 
 	var summonerNameNew = playerData["name"];
 	summonerNameNew = summonerNameNew.toLowerCase();
+
 	var summonerID = playerData["id"];
+
 	console.log("Name: " + summonerNameNew + ", ID: " + summonerID + ", Server: " + serverName);
 
+
+	// Run mongoDb Query to check if this is existing/new user
+	userModel.findOne({"summonerId":summonerID, "server":serverName}).exec(
+	function (err, userData) {
+	    if (err) return console.error(err);
+	    if(userData !== null){
+	    	// Existing User
+	    	updateUser(summonerID, serverName, summonerNameNew, offset, resToClient);
+	    }
+	    else {
+	    	// New User
+	    	newUser(summonerID, serverName, summonerNameNew, offset, resToClient);
+	    }
+	});
+
+
+}
+
+function newUser (summonerID, serverName, summonerNameNew, offset, resToClient) {
 
 	var newUser= new userModel({
 		summonerId: summonerID,
@@ -47,17 +72,27 @@ function newUserAdd(playerData, serverName, offset, res){
 		summonerName: summonerNameNew,
 		offset: offset
 	});
-	// Because we need newUser clone without the ID, (for updating)
-	var upsertData = newUser.toObject();
-	delete upsertData._id
 
-	console.log("Sup");
-	// Will update or insert the user, depending if there already a new user or not
-	// update(conditions for update, what to update, updateorinsert: true, callback)
-	userModel.update({summonerId: summonerID, server: serverName}, upsertData, {upsert: true}, function (err, newUser) {
+
+
+	userModel.create(newUser, function (err, newUser) {
+
 	  if (err) return console.error(err);
-	  console.log("User Added/Updated");
-	  res.send("PrivateEnlisted");
+	  userUpdateManager.updateNewUser(summonerID, serverName, resToClient);
+
+	});
+
+}
+
+function updateUser (summonerID, serverName, summonerNameNew, offset, resToClient) {
+
+	userModel.update({summonerId: summonerID,server: serverName},
+	{summonerName:summonerNameNew, offset:offset}, function (err, newUser) {
+
+	  if (err) return console.error(err);
+	  console.log("User Updated");
+	  resToClient.send("User Updated");
+
 	});
 }
 
