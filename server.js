@@ -31,7 +31,14 @@ var statManager = require("./statManager.js");
 
 
 app.post('/stat', function(req,res){
-	statManager.getStats(req.body.name, req.body.server, req.body.statType, res);
+
+	var playerObject = req.body;
+	var playerName = playerObject.name;
+
+	// lowercase playerName
+	playerName = playerName.toLowerCase();
+
+	statManager.getStats(playerName, req.body.server, req.body.statType, res);
 })
 
 
@@ -51,7 +58,9 @@ app.post('/graph', function(req,res){
 	var graphManagerOne = graphManager;
 
 	var playerObject = req.body;
-	var playerName = playerObject["name"];
+	var playerName = playerObject.name;
+
+	// lowercase playerName
 	playerName = playerName.toLowerCase();
 
 	console.log("HERE -- " + playerName);
