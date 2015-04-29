@@ -61,9 +61,17 @@ function getUserThenGraph(userName, serverName, graphOptions, graphFunctionName,
     if (err) return console.error(err);
 
     if(userData !== null){
-
       // User Found
-      graphFunctionName(null, userData, graphOptions, responder);
+
+      // Check if user has some data for graphing (25 is default lastMatchID)
+      // When updating a users game lastMatchId is updated to a much higher number
+      if(userData.lastMatchId > 25){
+        graphFunctionName(null, userData, graphOptions, responder);
+      }
+      else {
+        // Let client know that this user is new, attempt to re-request data
+        responder.send("Error: Specified user could not be found");
+      }
     } else {
 
       // Invalid summonerName given
@@ -137,7 +145,8 @@ function analyzeChampionDaysGraph(err, gameData, userData, responder){
       var champIdIndex = championIds.indexOf(game.champion);
       var duration =  Math.round(game.duration / 3600 * 100) / 100;
 
-      championGameCounts[champIdIndex] += duration;
+      championGameCounts[champIdIndex] = Math.round(
+        (championGameCounts[champIdIndex] + duration) * 100) / 100;
     } else {
 
       // This champion is not in the list, add it
