@@ -37,13 +37,44 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
     // Request Stats from server
     getStatRecordDay();
     getStatAverageDay();
+    getWinLossToday();
 
     // Request 4 different graphs data
     updateDailyGraph();
     updateAllGraph();
     updateMultiDayChampGraph();
     updateMultiDayGraph();
+
+    getChampionTotals();
   }
+
+
+
+  function getChampionTotals(){
+
+    // Request server for 10 most played champions
+    $http.post('/championTotals', {
+
+      // Pass server users name and server
+      name: $routeParams["userName"],
+      server: $routeParams["userServer"],
+
+    }).success(function(res){
+
+      console.log("championTotals - " + res);
+
+      // Set championTotals to returned array
+      $scope.championTotals = res;
+
+      // res format
+      // ["Annie", 5265]
+      // Number is in seconds
+
+    });
+  }
+
+
+
 
   /**
     * getStatRecordDay() Requests server for most hours played on a single day
@@ -80,6 +111,30 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 
 		});
 	}
+
+  /**
+    * getWinLossToday() requests the number of wins and losses for today
+    *
+    *
+  **/
+  function getWinLossToday(){
+    // Request server for win loss today
+    $http.post('/stat', {
+
+      // Pass server users name and server
+      name: $routeParams["userName"],
+      server: $routeParams["userServer"],
+
+      // Store what type of stat we want
+      statType: "winLossDay"
+
+    }).success(function(res){
+
+      $scope.stats.winsToday = res.wins;
+      $scope.stats.lossesToday = res.losses;
+
+    });
+  }
 
   /**
     * getStatAverageDay() Requests server for the average hours, player spends 
@@ -144,7 +199,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
         // Type of graph
         options: {
             chart: {
-                type: 'areaspline'
+                type: 'spline'
             }
         },
         xAxis: {
@@ -175,6 +230,8 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
         title: {
             text: ''
         },
+        
+
         // Set loading to true until we update the graph
         loading: true
     }
@@ -230,7 +287,16 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
               hour:"%l %P",
               day:"%l %P",
             }
+          },
+
+          // Set color of line
+          color: '#F94C77',
+
+          // Marker is a circle not diamond plz
+          marker: {
+            symbol: "circle"
           }
+
         }];
 
         // Data loaded, remove loading overlay
@@ -252,8 +318,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 		$scope.allChart.chartConfig = {
 		    options: {
 		        chart: {
-		            type: 'areaspline',
-
+		            type: 'spline',
                 // Zoomable on the x-axis
 		            zoomType: 'x'
 		        }
@@ -265,7 +330,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 		            	text: 'Date'
 		            },
                 // Set max zoom to 4 data points (4 days)
-		            minRange: 4 * 24 * 3600000 
+		            minRange: 1 * 24 * 3600000 
 		    },
 		    yAxis: {
 		    	title : {
@@ -337,7 +402,15 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
           pointStart: Date.UTC(graphInfo.firstGameDateYear, graphInfo.firstGameDateMonth-1, graphInfo.firstGameDateDay),
 
           // Load in dataPoints
-  				data: graphInfo.dataPoints
+  				data: graphInfo.dataPoints,
+
+          // Set color of line
+          color: '#F94C77',
+
+          // Marker is a circle not diamond plz
+          marker: {
+            symbol: "circle"
+          }
 
   			}];
 
@@ -364,7 +437,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
     $scope.weekChart.chartConfig = {
         options: {
             chart: {
-                type: 'areaspline'
+                type: 'spline'
             }
         },
         xAxis: {
@@ -456,7 +529,16 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
             fromDate.getDate()),
 
           // Set graph data to data from server
-          data: graphInfo.data
+          data: graphInfo.data,
+          
+          // Set color of line
+          color: '#F94C77',
+
+          // Marker is a circle not diamond plz
+          marker: {
+            symbol: "circle"
+          }
+
         }];
 
         // Remove loading overlay as we've loaded stuff
