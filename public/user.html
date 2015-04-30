@@ -15,6 +15,9 @@
   h1,h2 {
     margin-bottom: 20px;
   }
+  h3 {
+    margin-top : 40px;
+  }
 </style>
 </head>
 <body>
@@ -37,7 +40,19 @@
         <h2>Stats Today</h2>
         <h3>Today : {{stats.todayMinutes/60 | number:2}} hr</h3>
         <h3>Average Day : {{stats.averageDayMinutes/60 | number:2}} hr</h3>
-        <h3>Record : {{stats.recordDayMinutes/60 | number:2}} hr<small>({{stats.recordDayDate | date : 'mediumDate'}})</small></h3>
+        <h3>Record : {{stats.recordDayMinutes/60 | number:2}} hr 
+          <small>({{stats.recordDayDate | date : 'mediumDate'}})</small>
+        </h3>
+        <h3>
+          Win/Loss :
+          <div style="color:green; display: inline">{{stats.winsToday}}</div> 
+          / 
+          <div style="color:red; display: inline">{{stats.lossesToday}}</div>
+          <small>
+            ({{stats.winsToday/(stats.lossesToday+stats.winsToday) * 100 
+            | number: 2}}%)
+          </small>
+        </h3>
       </div>
     </div>
 
@@ -61,7 +76,16 @@
         <h2>All Tracked </h2>
         <highchart id="chart1" config="allChart.chartConfig" class="span10"></highchart>
       </div>
-  </div>
+    </div>
+    <div class="row" style="text-align:center">
+      <h1>Total Tracked By Champion</h1>
+      <div class="col-md-3" ng-repeat="champion in championTotals">
+        <div class="well well-md" style="margin: 10px">
+          <h2>{{champion.name}}</h2>
+          <h3>{{(champion.seconds / 3600) | number:  2}} hours </h3>
+        </div>
+      </div>
+
 
 </div>
 
