@@ -1,43 +1,56 @@
 
 // Config file for apiKey ect
 var config = require('./config/config');
+
 // Request for API Calls
 var request = require('request');
+
 // Models for DB interaction
 var userModel = require("./models/userModel.js").userModel;
 var gameModel = require("./models/gameModel.js").gameModel;
+
 // Converting to UTC
 var moment = require('moment-timezone');
+
+// Store if we have updated all users from last update set
+var updateNumber = 0;
+
 
 // Update User Games Functions
 var updateUser = function getUserToUpdate(){
 
-	console.log("Started - " + new Date());
-	
-	// Will select a list of users to update
-	// Must be not new users (lastMatchId > 25) as new users are updated seperately
-	userModel.find({updated: false, lastMatchId:{$gt:25}}).sort({lastMatchId: 1}).limit(105).exec(function (err, userData) {
-		if (err) return console.error(err);
-		// Got the user data commander!
-		// Make sure we atleast found one
-		console.log("Length - " + userData.length);
-		if(userData.length > 0){
-			while(userData.length > 0){
-				// Lets remove him from the array, so we can use him like an object
-				var user = userData[0];
-				// Remove from array so we know when we have processed all users
-				userData.splice(0, 1);
+	if(updateNumber == 0){
+		console.log("Started - " + new Date());
+		
+		// Will select a list of users to update
+		// Must be not new users (lastMatchId > 25) as new users are updated seperately
+		userModel.find({updated: false, lastMatchId:{$gt:25}}).sort({lastMatchId: 1}).limit(105).exec(function (err, userData) {
+			if (err) return console.error(err);
+			// Got the user data commander!
+			// Make sure we atleast found one
+			console.log("Length - " + userData.length);
+			if(userData.length > 0){
+				updateNumber += userData.length;
+				while(userData.length > 0){
+					// Lets remove him from the array, so we can use him like an object
+					var user = userData[0];
+					// Remove from array so we know when we have processed all users
+					userData.splice(0, 1);
 
-				scanUserGames(user, null);
+					scanUserGames(user, null);
+				}
+				userData = null;
+				user = null;
 			}
-			userData = null;
-			user = null;
-		}
-		else{
-		// No soilders left to update commander
-			console.log("Commander everyone is updated");
-		}
-	});
+			else{
+			// No soilders left to update commander
+				console.log("Commander everyone is updated");
+			}
+		});
+	}
+	else {
+		console.log("Can't update yet still - " + updateNumber);
+	}
 }
 function scanUserGames(user, resToClient){
 	/*
@@ -67,6 +80,9 @@ function scanUserGames(user, resToClient){
 					var userData = JSON.parse(response.body);
 					// Clearly a legit user
 					// Must of no previous games or match v1.3 is down
+
+					updateNumber -= 1;
+					
 					updateUserReset(user._id);
 				}
 				else {
@@ -93,6 +109,7 @@ function analyzeGames(user, gamesData, resToClient){
 	gamesData.forEach(function(game){
 		// To make sure we're only using new games (that we haven't added to DB)
 		if(game.gameId > lastMatchId){
+			console.log("Game ID " + game.gameId + " lastMatchId " + lastMatchId);
 			// console.log(game.gameId + " > " + lastMatchId);
 			var stats = game.stats;
 
@@ -132,6 +149,10 @@ function analyzeGames(user, gamesData, resToClient){
 
 		// Send graphDataFound to client for regraphing
 		resToClient.send("ReGraphPlz");
+	}
+	else {
+		updateNumber -= 1;
+		console.log("Updating - " + updateNumber);
 	}
 	
 	gamesData = null;
