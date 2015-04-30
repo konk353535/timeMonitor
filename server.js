@@ -12,6 +12,7 @@ app.use(bodyParser.json());
 // Require Mongoose DB
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/timeMonitor');
+
 // Connect to Mongoose DB
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
@@ -28,7 +29,18 @@ var userAddManager = require("./userAddManager.js");
 
 var statManager = require("./statManager.js");
 
+// Testing out championTotalManager
+var championTotals = require("./championTotalManager.js");
 
+app.post('/championTotals', function(req,res){
+
+	// lowercase playerName
+	var playerObject = req.body;
+	var playerName = playerObject.name;
+	playerName = playerName.toLowerCase();
+
+	championTotals.championsUser(playerName, req.body.server, res);
+});
 
 app.post('/stat', function(req,res){
 
