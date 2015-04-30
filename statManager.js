@@ -3,7 +3,7 @@ var userModel = require("./models/userModel.js").userModel;
 var gameModel = require("./models/gameModel.js").gameModel;
 
 // Moment so we can modify dates
-// var moment = require('moment-timezone');
+var moment = require('moment-timezone');
 
 
 var getStats = function getStat(userName, userServer, statType, responder){
@@ -35,6 +35,9 @@ var getStats = function getStat(userName, userServer, statType, responder){
                 }
                 else if(statType == "averageDay"){
                     averageDay(null, userData, responder);
+                }
+                else if(statType == "winLossDay"){
+                    winLossToday(null, userData, responder);
                 }
             }
         }
@@ -149,6 +152,56 @@ function averageDayOutputter(firstGame, lastGame, totalTrackedMinutes, responder
 
     var averageMinsPerDay = Math.round(totalTrackedMinutes / daysBetweenDates);
     responder.send([averageMinsPerDay]);
+}
+
+function winLossToday(err, userData, responder){
+
+    var now = moment().utcOffset(userData.offset*-1);
+
+    // Get first minute of today in client's timezone
+    var todayFirstMin = now;
+    todayFirstMin = moment(todayFirstMin).seconds(00);
+    todayFirstMin = moment(todayFirstMin).minutes(00);
+    todayFirstMin = moment(todayFirstMin).hours(00);
+    todayFirstMin = moment(todayFirstMin).format();
+
+    // Get last minute of today in client's timezone
+    var todayLastMin = now;
+    todayLastMin = moment(todayLastMin).seconds(59);
+    todayLastMin = moment(todayLastMin).minutes(59);
+    todayLastMin = moment(todayLastMin).hours(23);
+    todayLastMin = moment(todayLastMin).format();
+
+    // Get num losses
+    gameModel.count(
+        {$and: 
+            [{"userId":userData._id}, 
+            {dateTime: {$gt: todayFirstMin, $lt: todayLastMin}},
+            {isWin : false}]
+        }).exec(
+        function (err, res){
+
+        if(err) return console.log(err);
+        var losses = res;
+        // num Wins
+        gameModel.count(
+        {$and: 
+            [{"userId":userData._id}, 
+            {dateTime: {$gt: todayFirstMin, $lt: todayLastMin}},
+            {isWin : true}]
+        }).exec(
+        function (err, res){
+
+        if(err) return console.log(err);
+        var wins = res;
+        responder.send({wins:wins, losses:losses});
+
+        });
+
+    });
+    
+
+
 }
 
 
