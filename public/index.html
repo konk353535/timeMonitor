@@ -13,48 +13,127 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
   <!-- Optional theme -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+  <!-- Open Sans Font -->
+  <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 
   <title>Zilean</title>
+  <style>
+  .body {
+    font-family: 'Open Sans', sans-serif;
+  }
+  .btn-zil-blu {
+    background-color: #325b87;
+    color: #FFFFFF;
+    border-radius: 0;
+  }
+  .btn-zil-blu:hover, .btn-zil-blue:focus{
+    background-color: #325487;
+    color: #FFFFFF;
+    border-radius: 0;
+  }
+  h1,h2,h3,h4 {
+    color: #fff2a3;
+    font-family: 'Open Sans', sans-serif;
+  }
+  .big {
+    font-size: 36pt;
+  }
+  p {
+    color: #FFFFFF;
+  }
+  .explanation {
+    font-size: 12pt;
+    margin-bottom: 20px;
+  }
+  .navbar-zil {
+    border-radius: 0;
+  }
+  .form-group {
+    margin-bottom: 10px;
+  }
+  </style>
 </head>
-<body style="background-color: #3b3b3b; height: 100%;">
-  <div>
-    <div class="container" ng-controller="AppCtrl" style="text-align:center">
-        <div class="row">
-          <img src="img/Zilean_Logo.jpg" class="img-responsive" style="margin: 0 auto">
-        </div>
+<body style="background-color: #3b3b3b; height: 100%;" ng-controller="AppCtrl">
+  
+  <!-- Navbar -->
+  <nav class="navbar navbar-default navbar-zil navbar-inverse">
+    <div class="container">
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+      </div>
 
-        <div class="row">
-          <div class="col-md-6 col-md-offset-3">
-              <div class="form-group input-group-md">
-                <input type="text" class="form-control" id="GroupNameTextBox" placeholder="Ninjas" style="margin-bottom: 10px;">
-                <select class="form-control" ng-model="player.server" 
-                  id ="playerServer" style="margin-bottom: 10px">
-                  <option value="oce" selected>OCE</option>
-                  <option value="na">NA</option>
-                  <option value="eue">EUE</option>
-                  <option value="EUW">EUW</option>
-                </select>
-              </div>
-              <div class="form-group input-group-md">
-                <button type="button" class="btn btn-primary btn-block"   onmousedown="update_page()">Track</button>
-              </div>
-            
-            <!-- 
+      <!-- Collect the nav links, forms, and other content for toggling -->
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <ul class="nav navbar-nav">
+          <li><a href="#">Home</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <form class="navbar-form navbar-left" role="search">
             <div class="form-group">
-            <input class="form-control" ng-model="player.name" id="playerName" placeholder="Summoner Name">
-              <select class="form-control" ng-model="player.server" id ="playerServer">
+              <input type="text" class="form-control" 
+                placeholder="Summoner Name">
+              <select class="form-control" ng-model="player.server">
                 <option value="oce" selected>OCE</option>
                 <option value="na">NA</option>
                 <option value="eue">EUE</option>
                 <option value="EUW">EUW</option>
               </select>
             </div>
-            <button class="btn btn-primary btn-block" ng-click="addContact()" 
-            href="users/{{player.name}}/server/{{player.server}}">
-            Add n Track
-          </button>
-          -->
+            <button type="submit" class="btn btn-default">Track</button>
+          </form>
+        </ul>
+      </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+  </nav>
+
+  <!-- Input Box + Picture + Explanation -->
+  <div class="container" style="text-align:center">
+    
+    <div class="row">
+      <img src="img/Zilean-Logo-3.jpg" class="img-responsive" style="margin: 0 auto;">
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+
+        <p class="explanation">Zilean tracks every minute that you play, Look back at how much time you've played today, the last 7 days or as far back as Zilean has been tracking you.</p>
+
+        <div class="form-group input-group-lg">
+
+          <input type="text" class="form-control" 
+          placeholder="Summoner Name" style="margin-bottom: 10px;"
+          ng-model="player.name">
+
+          <select class="form-control" ng-model="player.server">
+            <option value="oce" selected>OCE</option>
+            <option value="na">NA</option>
+            <option value="eue">EUE</option>
+            <option value="EUW">EUW</option>
+          </select>
+
         </div>
+        <div class="form-group input-group-lg">
+
+          <a href="user/{{player.name}}/{{player.server}}">
+            <button type="button" class="btn btn-zil-blu btn-lg btn-block">
+              Track
+            </button>
+          </a>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container" style="text-align: center;">
+    <div class="row">
+      <div class="col-md-6 col-md-offset-3">
+        <h1 class="big">Tracking <b>22,192</b> Players</h1>
       </div>
     </div>
   </div>
