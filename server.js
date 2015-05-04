@@ -27,10 +27,22 @@ var cronManager = require("./cronManager.js");
 // User add manager to handle new user posts
 var userAddManager = require("./userAddManager.js");
 
+// Stat manager for retrieving stats
 var statManager = require("./statManager.js");
 
 // Testing out championTotalManager
 var championTotals = require("./championTotalManager.js");
+
+// userCounter to get number of users
+var userCounter = require('./userCounter.js');
+
+
+app.get('/countUsers', function(req,res){
+
+	// Send to counter to send to client
+	userCounter.getCount(res);
+
+});
 
 app.post('/championTotals', function(req,res){
 
@@ -38,6 +50,9 @@ app.post('/championTotals', function(req,res){
 	var playerObject = req.body;
 	var playerName = playerObject.name;
 	playerName = playerName.toLowerCase();
+
+	// Remove spaces
+	playerName = playerName.replace(/\s+/g, '');
 
 	championTotals.championsUser(playerName, req.body.server, res);
 });
@@ -49,6 +64,9 @@ app.post('/stat', function(req,res){
 
 	// lowercase playerName
 	playerName = playerName.toLowerCase();
+
+	// Remove spaces
+	playerName = playerName.replace(/\s+/g, '');
 
 	statManager.getStats(playerName, req.body.server, req.body.statType, res);
 })
@@ -74,6 +92,9 @@ app.post('/graph', function(req,res){
 
 	// lowercase playerName
 	playerName = playerName.toLowerCase();
+
+	// Remove spaces
+	playerName = playerName.replace(/\s+/g, '');
 
 	console.log("HERE -- " + playerName);
 	// Req.body contains graphName, clientTimeZoneOffSet, dates
