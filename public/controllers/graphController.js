@@ -21,6 +21,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 
     // Store server incase we need to re-request data
     $rootScope.serverName = $routeParams.userServer;
+    serverFormatter($rootScope.serverName);
 
     updateAllGraphsAndStats();
 	}
@@ -33,9 +34,25 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
     initalMultiDayGraph();
   }
 
+  // Loads the full name of the server for display
+  function serverFormatter(serverName){
+    if(serverName == "oce"){
+      $rootScope.serverNameFormatted = "Oceanic";
+    }
+    else if(serverName == "na"){
+      $rootScope.serverNameFormatted = "North America";
+    }
+    else if(serverName == "eue"){
+      $rootScope.serverNameFormatted = "Europe East";
+    }
+    else if(serverName == "euw"){
+      $rootScope.serverNameFormatted = "Europe West";
+    }
+  }
+
+
   function updateAllGraphsAndStats(){
     // Request Stats from server
-    getStatRecordDay();
     getStatAverageDay();
     getWinLossToday();
 
@@ -77,12 +94,15 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 
 
   /**
-    * getStatRecordDay() Requests server for most hours played on a single day
-    * Once server responds, displays stat on page
+    * Using data from the allGraph grabs the best day for the user
     *
   **/
-	function getStatRecordDay(){
+	function getStatRecordDay(allGraphDataPoints){
 
+    /**
+    ---------------------------------------------
+    Old code gets the date and record day but requires extra work from the server
+    ---------------------------------------------
 		// Request server for most played day (time(hr) + date)
 		$http.post('/stat', {
 
@@ -110,6 +130,15 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
       $scope.stats.recordDayDate = recordDate;
 
 		});
+    **/
+
+    Array.prototype.max = function() {
+      return Math.max.apply(null, this);
+    }
+
+    // *60 as allGraphDatapoints are in hours and recordDayMinutes converts from minutes to hours
+    $scope.stats.recordDayMinutes = allGraphDataPoints.max()*60;
+
 	}
 
   /**
@@ -290,7 +319,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
           },
 
           // Set color of line
-          color: '#F94C77',
+          color: '#94e2e4',
 
           // Marker is a circle not diamond plz
           marker: {
@@ -405,7 +434,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
   				data: graphInfo.dataPoints,
 
           // Set color of line
-          color: '#F94C77',
+          color: '#94e2e4',
 
           // Marker is a circle not diamond plz
           marker: {
@@ -416,6 +445,8 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 
         // Have datapoints, set loading to false
         $scope.allChart.chartConfig.loading = false;
+      
+        getStatRecordDay(response.dataPoints);
       }
 		});
 	}
@@ -532,7 +563,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
           data: graphInfo.data,
           
           // Set color of line
-          color: '#F94C77',
+          color: '#94e2e4',
 
           // Marker is a circle not diamond plz
           marker: {
