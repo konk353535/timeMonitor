@@ -53,7 +53,6 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 
   function updateAllGraphsAndStats(){
     // Request Stats from server
-    getStatAverageDay();
     getWinLossToday();
 
     // Request 4 different graphs data
@@ -171,8 +170,12 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
     *
     *
   **/
-	function getStatAverageDay(){
-
+	function getStatAverageDay(allGraphDataPoints){
+    /*
+    ----------------------
+    Old getStatAverageDay asked server for average day,
+    Put extra load on server
+    ----------------------
 		// Request server for average day (mins)
 		$http.post('/stat', {
 
@@ -189,7 +192,24 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 			$scope.stats.averageDayMinutes = res[0];
 
 		});
-	}
+    */
+
+    // To get the mean we get total / numPoints
+    var totalHours = 0;
+    var numPoints = 0;
+
+    for(var i = 0; i < allGraphDataPoints.length; i++){
+      totalHours += allGraphDataPoints[i];
+      numPoints++;
+    }
+
+    console.log("Total Hours " + totalHours);
+    console.log("Total Points " + numPoints);
+
+    // Calculate the average, *60 as stats are given as minutes and converted to hours using angular js and allGraphDataPoints are in hour
+    $scope.stats.averageDayMinutes = (totalHours / numPoints) * 60;
+    	
+  }
 
   /**
     * getStatToday Gets the total played time today
@@ -447,6 +467,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
         $scope.allChart.chartConfig.loading = false;
       
         getStatRecordDay(response.dataPoints);
+        getStatAverageDay(response.dataPoints);
       }
 		});
 	}
