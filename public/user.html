@@ -1,31 +1,43 @@
 <!DOCTYPE>
 <html ng-app="myCharts">
 <head>
-<!-- Because the url has user/SummName/ServerName, html thinks those are folders, we tell em no -->
-<base href="/">
-<link rel="stylesheet" href="angular-chart.css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <!-- Because the url has user/SummName/ServerName, html thinks those are folders, we tell em no -->
+  <base href="/">
+  <link rel="stylesheet" href="angular-chart.css">
 
-<!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
-<!-- Optional theme -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
 
-<title>Zilean</title>
+  <title>Zilean</title>
 
-<link rel="icon" type="image/png" href="img/Cog.png">
+  <link rel="icon" type="image/png" href="img/Cog.png">
 
-<style>
-  h1,h2 {
-    margin-bottom: 20px;
-  }
-  h3 {
-    margin-top : 40px;
-  }
-  h1,h2,h3,h4 {
-    color: #fff2a3;
-    font-family: 'Open Sans', sans-serif;
-  }
-</style>
+  <style>
+    h1,h2 {
+      margin-bottom: 20px;
+    }
+    h3 {
+      margin-top : 40px;
+    }
+    h1,h2,h3,h4 {
+      color: #fff2a3;
+      font-family: 'Open Sans', sans-serif;
+    }
+    .well {
+      /*For some reason there is a background image for this..? weird*/
+      background-image: none;
+      background-color: #2e2e2e;
+      border: 1px solid rgb(69,114,167); 
+      color: #FFFFFF;
+    }
+  </style>
 </head>
 <body style="background-color: #3b3b3b; height: 100%;" ng-controller="todayChartCtrl" id="chartApp">
   <!-- Nav bar -->
@@ -44,13 +56,13 @@
       <!-- Collect the nav links, forms, and other content for toggling -->
       <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
         <ul class="nav navbar-nav">
-          <li><a href="#">Home</a></li>
+          <li><a href="/home">Home</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <form class="navbar-form navbar-left" role="search">
             <div class="form-group">
               <input type="text" class="form-control" 
-                placeholder="Summoner Name">
+                placeholder="Summoner Name" ng-model="player.name">
               <select class="form-control" ng-model="player.server">
                 <option value="oce" selected>OCE</option>
                 <option value="na">NA</option>
@@ -58,7 +70,9 @@
                 <option value="EUW">EUW</option>
               </select>
             </div>
-            <button type="submit" class="btn btn-default">Track</button>
+            <a href="user/{{player.name}}/{{player.server}}">
+              <button type="submit" class="btn btn-default">Track</button>
+            </a>
           </form>
         </ul>
       </div><!-- /.navbar-collapse -->
@@ -130,12 +144,12 @@
     <div class="row" style="text-align:center">
       <h1>Total Tracked By Champion</h1>
       <div class="col-md-3" ng-repeat="champion in championTotals">
-        <div class="well well-md" style="margin: 10px">
+        <div class="well well-md" 
+          style="margin: 10px;">
           <h2>{{champion.name}}</h2>
           <h3>{{(champion.seconds / 3600) | number:  2}} hours </h3>
         </div>
       </div>
-
 <!-- Jquery for highcharts -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 <!-- Angular base js -->
