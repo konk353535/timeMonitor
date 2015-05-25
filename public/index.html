@@ -71,13 +71,13 @@
       <!-- Collect the nav links, forms, and other content for toggling -->
       <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
         <ul class="nav navbar-nav">
-          <li><a href="#">Home</a></li>
+          <li><a href="/user/jeffanator/oce">Home</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <form class="navbar-form navbar-left" role="search">
             <div class="form-group">
               <input type="text" class="form-control" 
-                placeholder="Summoner Name">
+                placeholder="Summoner Name" ng-model="player.name">
               <select class="form-control" ng-model="player.server">
                 <option value="oce" selected>OCE</option>
                 <option value="na">NA</option>
@@ -85,7 +85,9 @@
                 <option value="EUW">EUW</option>
               </select>
             </div>
-            <button type="submit" class="btn btn-default">Track</button>
+            <a href="user/{{player.name}}/{{player.server}}">
+              <button type="submit" class="btn btn-default">Track</button>
+            </a>
           </form>
         </ul>
       </div><!-- /.navbar-collapse -->
@@ -133,7 +135,7 @@
   <div class="container" style="text-align: center;">
     <div class="row">
       <div class="col-md-6 col-md-offset-3">
-        <h1 class="big">Tracking <b>22,192</b> Players</h1>
+        <h1 class="big">Tracking <b>{{userCount}}</b> Players</h1>
       </div>
     </div>
   </div>
