@@ -1,9 +1,6 @@
 
-
-
-
 // Access Controller for graph page
-myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', 'utilityService' ,'statService', function ($rootScope, $http, $routeParams, utilityService, statService) {
+myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', 'utilityService' ,'statService', 'todayGraphService', function ($rootScope, $http, $routeParams, utilityService, statService, todayGraphService) {
 
   // Only scope we want is the rootScope
 	$scope = $rootScope;
@@ -30,30 +27,26 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', 'util
     updateAllGraphsAndStats();
   }
   else {
+
     // Initalize all graphs
-    initalDailyGraph();
+    todayGraphService.initalDailyGraph();
     initalAllGraph();
     initalMultiDayChampGraph();
     initalMultiDayGraph();
   }
-
-
-
 
   function updateAllGraphsAndStats(){
     // Request W/L stats from server
     statService.getWinLossToday($rootScope.userName, $rootScope.serverName, $http);
 
     // Request 4 different graphs data
-    updateDailyGraph();
+    todayGraphService.updateDailyGraph(statService, $http);
     updateAllGraph();
     updateMultiDayChampGraph();
     updateMultiDayGraph();
 
     getChampionTotals();
   }
-
-
 
   function getChampionTotals(){
 
@@ -78,140 +71,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', 'util
     });
   }
 
-
-
-
-
-
-
-
-
-
-
-
-  /**
-    * initalDailyGraph() sets default setting for today graph
-    *
-    *
-  **/
-	function initalDailyGraph(){
-
-    // Create object to store all info about Today graph
-    $scope.todayChart = {};
-
-    // Today graph options
-    $scope.todayChart.chartConfig = {
-        // Type of graph
-        options: {
-            chart: {
-                type: 'spline'
-            }
-        },
-        xAxis: {
-          type: 'datetime',
-          title : {
-            text: 'Time'
-          },
-          // Have a label every 3 hours
-          tickInterval: 3 * 3600 * 1000,
-          dateTimeLabelFormats : {
-            // Only show hour (am/pm)
-            hour:"%l %P",
-            day:"%l %P",
-          }
-        },
-        yAxis: {
-          title : {
-            text: 'Mins'
-          },
-          // Set min so we have no -10 range
-          min: 0,
-          // Set range to min amnt so 0 isn't vertically aligned
-          minRange: 40
-        },
-        series: [{
-            data: []
-        }],
-        title: {
-            text: ''
-        },
-        
-
-        // Set loading to true until we update the graph
-        loading: true
-    }
-	}
-
-	/**
-    * updateDailyGraph() 
-    * requests server for data to graph the 24 hours graph
-    *
-  **/
-  function updateDailyGraph(){
-
-    // Gets clients timezone offset
-    var offset = new Date().getTimezoneOffset();
-
-    // Request server for todays graph data
-    $http.post('/graph', {
-
-      // Store client's timezone so graph is in there timezone
-      userOffSet: offset,
-
-      // Let server know what type of graph we want
-      graphType: "today",
-
-      // Store users name and server
-      name: $routeParams["userName"],
-      server: $routeParams["userServer"]
-
-    }).success(function(response){
-
-      // Make sure we got graph data, not an error message or null
-      if(response && response != "Error: Specified user could not be found"){
-        // Store response from server 
-        $scope.todayChart.data = response;
-
-        // Empty array for making custom labels
-        var customTodayData = [];
-        var todayChartData = $scope.todayChart.data;
-
-        for (var i = 0; i < todayChartData.length; i++){
-          // For each point load in a date with specific time
-          customTodayData[i] = [Date.UTC(2000, 1, 1, i), todayChartData[i]];
-        }
-
-        console.log("Today Date Data - " + customTodayData);
-
-        $scope.todayChart.chartConfig.series = [{
-          name: 'Mins Played',
-          data: customTodayData,
-          tooltip : {
-            dateTimeLabelFormats : {
-              // Make tooltip display 7 am (hr am/pm)
-              hour:"%l %P",
-              day:"%l %P",
-            }
-          },
-
-          // Set color of line
-          color: '#94e2e4',
-
-          // Marker is a circle not diamond plz
-          marker: {
-            symbol: "circle"
-          }
-
-        }];
-
-        // Data loaded, remove loading overlay
-        $scope.todayChart.chartConfig.loading = false;
-
-        // Update today stat now as depedant on today chart data
-        statService.getStatToday();
-      }
-    });
-  }
+ 
 
   
 
@@ -605,7 +465,3 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', 'util
 
 
 }]);
-
-
-
-
