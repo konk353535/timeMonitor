@@ -1,12 +1,15 @@
 
 
-var myApp = angular.module('myCharts', ["chart.js", "ngRoute", "highcharts-ng"]);
+
 
 // Access Controller for graph page
-myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', function ($rootScope, $http, $routeParams) {
+myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', 'utilityService' ,'statService', function ($rootScope, $http, $routeParams, utilityService, statService) {
 
   // Only scope we want is the rootScope
 	$scope = $rootScope;
+
+  // Set default select value to oce
+  $scope.player = {server: "oce", name: ""};
 
   // Object so all our stats live in one place
 	$scope.stats = {};
@@ -21,12 +24,12 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 
     // Store server incase we need to re-request data
     $rootScope.serverName = $routeParams.userServer;
-    serverFormatter($rootScope.serverName);
+
+    $rootScope.serverNameFormatted = utilityService.serverFormat($rootScope.serverName);
 
     updateAllGraphsAndStats();
-	}
+  }
   else {
-
     // Initalize all graphs
     initalDailyGraph();
     initalAllGraph();
@@ -34,26 +37,12 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
     initalMultiDayGraph();
   }
 
-  // Loads the full name of the server for display
-  function serverFormatter(serverName){
-    if(serverName == "oce"){
-      $rootScope.serverNameFormatted = "Oceanic";
-    }
-    else if(serverName == "na"){
-      $rootScope.serverNameFormatted = "North America";
-    }
-    else if(serverName == "eue"){
-      $rootScope.serverNameFormatted = "Europe East";
-    }
-    else if(serverName == "euw"){
-      $rootScope.serverNameFormatted = "Europe West";
-    }
-  }
+
 
 
   function updateAllGraphsAndStats(){
-    // Request Stats from server
-    getWinLossToday();
+    // Request W/L stats from server
+    statService.getWinLossToday($rootScope.userName, $rootScope.serverName, $http);
 
     // Request 4 different graphs data
     updateDailyGraph();
@@ -92,146 +81,13 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 
 
 
-  /**
-    * Using data from the allGraph grabs the best day for the user
-    *
-  **/
-	function getStatRecordDay(allGraphDataPoints){
 
-    /**
-    ---------------------------------------------
-    Old code gets the date and record day but requires extra work from the server
-    ---------------------------------------------
-		// Request server for most played day (time(hr) + date)
-		$http.post('/stat', {
 
-      // Pass server users name and server
-			name: $routeParams["userName"],
-			server: $routeParams["userServer"],
 
-      // Store what type of stat we want
-			statType: "recordDay"
 
-		}).success(function(res){
 
-			console.log("Stat - " + res);
-			
-      // Set # minutes played on record day
-      $scope.stats.recordDayMinutes = res.recordMinutes;
-			
-      // Create date of recordDay
-      var recordDate = new Date();
-			recordDate.setFullYear(res.year);
-			recordDate.setMonth(res.month - 1);
-			recordDate.setDate(res.day);
-			
-      // Show date of recordDay on page
-      $scope.stats.recordDayDate = recordDate;
 
-		});
-    **/
 
-    Array.prototype.max = function() {
-      return Math.max.apply(null, this);
-    }
-
-    // *60 as allGraphDatapoints are in hours and recordDayMinutes converts from minutes to hours
-    $scope.stats.recordDayMinutes = allGraphDataPoints.max()*60;
-
-	}
-
-  /**
-    * getWinLossToday() requests the number of wins and losses for today
-    *
-    *
-  **/
-  function getWinLossToday(){
-    // Request server for win loss today
-    $http.post('/stat', {
-
-      // Pass server users name and server
-      name: $routeParams["userName"],
-      server: $routeParams["userServer"],
-
-      // Store what type of stat we want
-      statType: "winLossDay"
-
-    }).success(function(res){
-
-      $scope.stats.winsToday = res.wins;
-      $scope.stats.lossesToday = res.losses;
-
-    });
-  }
-
-  /**
-    * getStatAverageDay() Requests server for the average hours, player spends 
-    * per day Total Tracked time / (Days between oldest game and today) 
-    *
-    *
-  **/
-	function getStatAverageDay(allGraphDataPoints){
-    /*
-    ----------------------
-    Old getStatAverageDay asked server for average day,
-    Put extra load on server
-    ----------------------
-		// Request server for average day (mins)
-		$http.post('/stat', {
-
-      // Pass server userName and server
-			name: $routeParams["userName"],
-			server: $routeParams["userServer"],
-
-      // Store what type of stat i want
-			statType: "averageDay"
-
-		}).success(function(res){
-
-			// Display number given from server to the page
-			$scope.stats.averageDayMinutes = res[0];
-
-		});
-    */
-
-    // To get the mean we get total / numPoints
-    var totalHours = 0;
-    var numPoints = 0;
-
-    for(var i = 0; i < allGraphDataPoints.length; i++){
-      totalHours += allGraphDataPoints[i];
-      numPoints++;
-    }
-
-    console.log("Total Hours " + totalHours);
-    console.log("Total Points " + numPoints);
-
-    // Calculate the average, *60 as stats are given as minutes and converted to hours using angular js and allGraphDataPoints are in hour
-    $scope.stats.averageDayMinutes = (totalHours / numPoints) * 60;
-    	
-  }
-
-  /**
-    * getStatToday Gets the total played time today
-    * Don't have to req server as already have today information 
-    * From the 24 hour graph
-    *
-  **/
-	function getStatToday(){
-		
-		var totalMins = 0;
-
-    // Get all time played today from 24 hour graph
-		var todayDataPoints = $scope.todayChart.data;
-		
-    // Sum all datapoints
-		for (var i = 0; i < todayDataPoints.length; i++){
-			totalMins += todayDataPoints[i];
-		}
-
-    // Load Calculated sum to page
-		$scope.stats.todayMinutes = totalMins;
-	}
 
   /**
     * initalDailyGraph() sets default setting for today graph
@@ -352,7 +208,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
         $scope.todayChart.chartConfig.loading = false;
 
         // Update today stat now as depedant on today chart data
-        getStatToday();
+        statService.getStatToday();
       }
     });
   }
@@ -466,8 +322,8 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
         // Have datapoints, set loading to false
         $scope.allChart.chartConfig.loading = false;
       
-        getStatRecordDay(response.dataPoints);
-        getStatAverageDay(response.dataPoints);
+        statService.recordDay(response.dataPoints);
+        statService.getStatAverageDay(response.dataPoints);
       }
 		});
 	}
@@ -752,28 +608,4 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', funct
 
 
 
-myApp.config(function($routeProvider, $locationProvider) {
-  $routeProvider
-  // When we find this url
-   .when('/user/:userName/:userServer', {
-    template: ' ',
-    // Send routeParams to this controller
-    controller: 'todayChartCtrl',
-    resolve: {
-      // Wait 50 milliseconds before we send params
-      delay: function($q, $timeout) {
-        var delay = $q.defer();
-        $timeout(delay.resolve, 50);
-        return delay.promise;
-      }
-    }
-  })
-  // Irrelivant
-  .when('/Book/:bookId/ch/:chapterId', {
-    templateUrl: 'chapter.html',
-    controller: 'ChapterController'
-  });
 
-  // configure html5 to get links working on jsfiddle
-  $locationProvider.html5Mode(true);
-});
