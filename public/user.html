@@ -56,7 +56,8 @@
       <!-- Collect the nav links, forms, and other content for toggling -->
       <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
         <ul class="nav navbar-nav">
-          <li><a href="/home">Home</a></li>
+          <li><a href="/" target="_self">Home</a></li>
+          <li><a href="/compare">Compare</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <form class="navbar-form navbar-left" role="search">
@@ -67,7 +68,7 @@
                 <option value="oce" selected>OCE</option>
                 <option value="na">NA</option>
                 <option value="eue">EUE</option>
-                <option value="EUW">EUW</option>
+                <option value="euw">EUW</option>
               </select>
             </div>
             <a href="user/{{player.name}}/{{player.server}}">
@@ -92,11 +93,18 @@
     <div ng-view></div>
 
     <div class="row" >
-      <div class="col-md-6" style="text-align:center">
+      <div class="col-md-12" style="text-align:center">
         <h2>Today</h2>
         <highchart id="chart3" config="todayChart.chartConfig" class="span10">
         </highchart>
       </div>
+    </div>
+
+  </div>
+
+
+  <div class="container">
+    <div class="row" >
       <div class="col-md-6" 
         style="text-align:center;">
         <h2>Stats Today</h2>
@@ -118,21 +126,16 @@
         </h3>
         </div>
       </div>
-    </div>
-
-  </div>
-
-
-  <div class="container">
-    <div class="row" >
-      <div class="col-md-6" style="text-align:center">
-        <h2>Last 7 Days</h2>
-        <highchart id="chart3" config="weekChart.chartConfig" class="span10">
-        </highchart>
-      </div>
       <div class="col-md-6" style="text-align:center">
         <h2>Champions (7 Days)</h2>
         <highchart id="chart2" config="champChart.chartConfig" class="span10"></highchart>
+      </div>
+    </div>
+    <div class="row" style="text-align:center">
+      <div class="col-md-12" style="text-align:center">
+        <h2>Last 7 Days</h2>
+        <highchart id="chart3" config="weekChart.chartConfig" class="span10">
+        </highchart>
       </div>
     </div>
     <div class="row" style="text-align:center">
@@ -165,6 +168,12 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
 <script src="angular-chart.js"></script>
 <!-- Controllers -->
+<script src="controllers/graphApp.js"></script>
+<script src="controllers/todayGraphServices.js"></script>
+<script src="controllers/multiDayGraphService.js"></script>
+<script src="controllers/championPieGraphService.js"></script>
+<script src="controllers/statsService.js"></script>
+<script src="controllers/allGraphService.js"></script>
 <script src="controllers/graphController.js"></script>
 </body>
 </html>
