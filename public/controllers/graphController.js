@@ -1,6 +1,6 @@
 
 // Access Controller for graph page
-myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', 'utilityService' ,'statService', 'todayGraphService', function ($rootScope, $http, $routeParams, utilityService, statService, todayGraphService) {
+myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', 'utilityService' ,'statService', 'todayGraphService', 'allGraphService', function ($rootScope, $http, $routeParams, utilityService, statService, todayGraphService, allGraphService) {
 
   // Only scope we want is the rootScope
 	$scope = $rootScope;
@@ -13,6 +13,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', 'util
 
   // If we have pulled users name and server from url
 	if($routeParams.userName){
+
     // Add/Update this user
     addUser();
 
@@ -22,26 +23,29 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', 'util
     // Store server incase we need to re-request data
     $rootScope.serverName = $routeParams.userServer;
 
+    // Output full server name (oce = Oceanic ect)
     $rootScope.serverNameFormatted = utilityService.serverFormat($rootScope.serverName);
 
+    // Req all graphs and stats
     updateAllGraphsAndStats();
   }
   else {
 
     // Initalize all graphs
     todayGraphService.initalDailyGraph();
-    initalAllGraph();
+    allGraphService.initalAllGraph();
     initalMultiDayChampGraph();
     initalMultiDayGraph();
   }
 
   function updateAllGraphsAndStats(){
+    
     // Request W/L stats from server
     statService.getWinLossToday($rootScope.userName, $rootScope.serverName, $http);
 
     // Request 4 different graphs data
     todayGraphService.updateDailyGraph(statService, $http);
-    updateAllGraph();
+    allGraphService.updateAllGraph(statService, $http);
     updateMultiDayChampGraph();
     updateMultiDayGraph();
 
@@ -75,118 +79,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', 'util
 
   
 
-	function initalAllGraph(){
-    // Object to store all info for AllGraph
-		$scope.allChart = {};
-
-		// All graph options
-		$scope.allChart.chartConfig = {
-		    options: {
-		        chart: {
-		            type: 'spline',
-                // Zoomable on the x-axis
-		            zoomType: 'x'
-		        }
-		    },
-		    xAxis: {
-                // set xAxis to datetime, so we can use timesteps
-		            type: 'datetime',
-		            title : {
-		            	text: 'Date'
-		            },
-                // Set max zoom to 4 data points (4 days)
-		            minRange: 1 * 24 * 3600000 
-		    },
-		    yAxis: {
-		    	title : {
-		    		text: 'Hours'
-		    	},
-          // Min 0 so we don't have -10 range, (can't have negative time)
-		    	min: 0
-		    },
-		    series: [{
-		        data: []
-		    }],
-		    title: {
-		        text: ''
-		    },
-
-        // Set loading to true, as we haven't found data yet
-		    loading: true
-		}
-	}
-
-  /**
-    * updateAllGraph() Requests server for all data
-    * Each datapoint is a day
-    *
-    *
-  **/
-	function updateAllGraph(){
-
-		var offset = new Date().getTimezoneOffset();
-
-		var now = new Date();
-
-		// Request server for all tracked days graph data
-		$http.post('/graph', {
-
-      // Useroffset so server know's my timezone
-			userOffSet: offset,
-
-			// Let server know what graphType we want
-      graphType: "allGraph",
-
-      // Send Year, Month, Day of client
-			clientYear: now.getFullYear(),
-			clientMonth: (now.getMonth()+1),
-			clientDay: now.getDate(),
-
-      // User name and server
-			name: $routeParams["userName"],
-			server: $routeParams["userServer"]
-
-		}).success(function(response){
-
-      if(response && response != "Error: Specified user could not be found"){
-
-        // Store server response
-  			graphInfo = response;
-
-  			console.log("AllChart Data - " + graphInfo.dataPoints);
-
-  			$scope.allChart.chartConfig.series = [{
-          
-          // Each point is 24 hours
-          pointInterval: 24 * 3600 * 1000,
-
-          // Name of tooltip Eg on hover Hours Played : Value
-          name: 'Hours Played',
-
-          // -1 from firstGameDateMonth, as it is in standard month format 1 = january, where Date.UTC wants format 0 = january
-          pointStart: Date.UTC(graphInfo.firstGameDateYear, graphInfo.firstGameDateMonth-1, graphInfo.firstGameDateDay),
-
-          // Load in dataPoints
-  				data: graphInfo.dataPoints,
-
-          // Set color of line
-          color: '#94e2e4',
-
-          // Marker is a circle not diamond plz
-          marker: {
-            symbol: "circle"
-          }
-
-  			}];
-
-        // Have datapoints, set loading to false
-        $scope.allChart.chartConfig.loading = false;
-      
-        statService.recordDay(response.dataPoints);
-        statService.getStatAverageDay(response.dataPoints);
-      }
-		});
-	}
+	
 
   
 
