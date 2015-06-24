@@ -46,21 +46,18 @@ myApp.factory('statService', function(){
 	*
 	*
   	**/
-	getStatAverageDay: function (allGraphDataPoints){
-    /*
-    ----------------------
-    Old getStatAverageDay asked server for average day,
-    Put extra load on server
-    ----------------------
+	getStatAverageDay: function ($http){
+    
+
 		// Request server for average day (mins)
 		$http.post('/stat', {
 
-      // Pass server userName and server
-			name: $routeParams["userName"],
-			server: $routeParams["userServer"],
+      	// Pass server userName and server
+		name: $scope.userName,
+		server: $scope.serverName,
 
-      // Store what type of stat i want
-			statType: "averageDay"
+      	// Store what type of stat i want
+		statType: "averageDay"
 
 		}).success(function(res){
 
@@ -68,46 +65,62 @@ myApp.factory('statService', function(){
 			$scope.stats.averageDayMinutes = res[0];
 
 		});
-    */
-
-    // To get the mean we get total / numPoints
-    var totalHours = 0;
-    var numPoints = 0;
-
-    for(var i = 0; i < allGraphDataPoints.length; i++){
-      totalHours += allGraphDataPoints[i];
-      numPoints++;
-    }
-
-    console.log("Total Hours " + totalHours);
-    console.log("Total Points " + numPoints);
-
-    // Calculate the average, *60 as stats are given as minutes and converted to hours using angular js and allGraphDataPoints are in hour
-    $scope.stats.averageDayMinutes = (totalHours / numPoints) * 60;
     	
   	},
 
 	/**
-	* getStatToday Gets the total played time today
-	* Don't have to req server as already have today information 
-	* From the 24 hour graph
+	* getStatRecordDay() Requests server for most hours played on a single day
+	* Once server responds, displays stat on page
 	*
 	**/
-	getStatToday: function (){
-		
-		var totalMins = 0;
+	getStatRecordDay: function ($http){
 
-	// Get all time played today from 24 hour graph
-		var todayDataPoints = $scope.todayChart.data;
-		
-	// Sum all datapoints
-		for (var i = 0; i < todayDataPoints.length; i++){
-			totalMins += todayDataPoints[i];
+		// Request server for most played day (time(hr) + date)
+		$http.post('/stat', {
+
+	      	// Pass server users name and server
+			name: $scope.userName,
+			server: $scope.serverName,
+
+	      	// Store what type of stat we want
+			statType: "recordDay"
+
+		}).success(function(res){
+
+			console.log("Stat - " + res);
+				
+	    	// Set # minutes played on record day
+	    	$scope.stats.recordDayMinutes = res.recordMinutes;
+				
+	    	// Create date of recordDay
+	    	var recordDate = new Date();
+			recordDate.setFullYear(res.year);
+			recordDate.setMonth(res.month - 1);
+			recordDate.setDate(res.day);
+				
+	    	// Show date of recordDay on page
+	      	$scope.stats.recordDayDate = recordDate;
+
+		});
+	},
+
+	/**
+	* getToday uses the given today data, and sums it
+	*
+	*
+	**/
+	getToday : function(todayDataPoints){
+		console.log(todayDataPoints);
+
+		var sum = 0;
+
+		for (i in todayDataPoints) {
+			sum += todayDataPoints[i][1];
 		}
 
-	// Load Calculated sum to page
-		$scope.stats.todayMinutes = totalMins;
+		$scope.stats.todayMinutes = sum;
 	}
 
-	}
+
+}
 });
