@@ -145,10 +145,7 @@ function averageDayOutputter(firstGame, lastGame, totalTrackedMinutes, responder
 
     // Gets total days the user has been tracked for
     var secondsBetweenDates = Math.abs(Math.round(firstGame-lastGame)/1000);
-    var daysBetweenDates = Math.round(secondsBetweenDates / 60 / 60 / 24);
-    if(daysBetweenDates < 1){
-        daysBetweenDates = 1;
-    }
+    var daysBetweenDates = Math.ceil(secondsBetweenDates / 60 / 60 / 24);
 
     var averageMinsPerDay = Math.round(totalTrackedMinutes / daysBetweenDates);
     responder.send([averageMinsPerDay]);
