@@ -25,6 +25,9 @@ var moment = require('moment-timezone');
 var getGraph = function getGraph(userName, serverName, graphOptions, 
   responder) {
 
+
+  
+
   // Set offset
   offSet = graphOptions.userOffSet;
 
@@ -55,10 +58,12 @@ var getGraph = function getGraph(userName, serverName, graphOptions,
   */
 function getUserThenGraph(userName, serverName, graphOptions, graphFunctionName, responder) {
 
+  console.log("Starting get user then graph");
+
   // Query mongodb for user with name and server
   userModel.findOne({"summonerName":userName, "server":serverName}).exec(function (err, userData) {
 
-    if (err) return console.error(err);
+    if (err) console.error(err);
 
     if(userData !== null){
       // User Found
@@ -292,18 +297,17 @@ function todayGraph(err, userData, graphOptions, responder){
 
   console.log("Private give me " + userData._id + " games today!");
 
-  // Now in the client's timezone
-  var now = moment().utcOffset(graphOptions.userOffSet*-1);
+
 
   // Get first minute of today in client's timezone
-  var todayFirstMin = now;
+  var todayFirstMin = graphOptions.fromDate;
   todayFirstMin = moment(todayFirstMin).seconds(00);
   todayFirstMin = moment(todayFirstMin).minutes(00);
   todayFirstMin = moment(todayFirstMin).hours(00);
   todayFirstMin = moment(todayFirstMin).format();
 
   // Get last minute of today in client's timezone
-  var todayLastMin = now;
+  var todayLastMin = graphOptions.toDate;
   todayLastMin = moment(todayLastMin).seconds(59);
   todayLastMin = moment(todayLastMin).minutes(59);
   todayLastMin = moment(todayLastMin).hours(23);
