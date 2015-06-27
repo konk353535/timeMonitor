@@ -39,7 +39,8 @@ myApp.factory('championPieGraphService', function(){
           },
 
           // Haven't got data from server yet, so still loading
-          loading: true
+          loading: true,
+          noData: "Sorry, No data to display"
       }
 
     },
@@ -49,23 +50,21 @@ myApp.factory('championPieGraphService', function(){
       * Once recieves graph the data given on a pie chart
       *
     **/
-  	update: function ($http, fD, tD){
+  	update: function ($http, fromDate, toDate){
 
       
       // Get current date for client
   		//var n = new Date();
 
-  		var fromDate = new Date(
-        fD.getFullYear(), (fD.getMonth()), fD.getDate(), 0, 0, 0, 0);
+  		var fromDate = new Date(fromDate.getFullYear(), 
+                              fromDate.getMonth(), 
+                              fromDate.getDate(), 0, 0, 0, 0);
 
-  		var toDate = new Date(
-        tD.getFullYear(), (tD.getMonth()), tD.getDate(), 23, 59, 59, 99);
+      var toDate = new Date(toDate.getFullYear(), 
+                            toDate.getMonth(), 
+                            toDate.getDate(), 23, 59, 99, 99);
 
-
-  		//toDate.setDate(fromDate.getDate());
-  		//fromDate.setDate(fromDate.getDate() - 6);
       
-
       // Store users timezone
   		var offset = new Date().getTimezoneOffset();
 
@@ -83,8 +82,8 @@ myApp.factory('championPieGraphService', function(){
   			endDate: toDate,
 
         // Users name and server
-  			name: $scope.userName,
-  			server: $scope.serverName
+  			name: $scope.username,
+  			server: $scope.server
 
   		}).success(function(response){
 
