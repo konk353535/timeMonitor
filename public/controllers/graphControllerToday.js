@@ -25,16 +25,12 @@ myApp.controller("todayChartCtrl", ['$scope', '$rootScope', '$http', '$routePara
     
   };
 
-  // When the date has changed (need to use normalScope so we can access scope of date picker)
   $normalScope.dateChanged = function(){
       $scope.currentDate = new Date($normalScope.demo.dtFrom);
+
       var fromDate = new Date($normalScope.demo.dtFrom);
       var toDate = new Date($normalScope.demo.dtFrom);
 
-      console.log(fromDate);
-      console.log(toDate);
-
-      // Req all graphs and stats
       updateAllGraphsAndStats(fromDate, toDate);
   }
 
@@ -42,31 +38,22 @@ myApp.controller("todayChartCtrl", ['$scope', '$rootScope', '$http', '$routePara
 
 
   // If we have pulled users name and server from url
-	if($routeParams.userName){
+	if($routeParams.username){
 
-
-    // Add/Update this user
     addUser();
 
-    // Set userName so we can display on page
-		$rootScope.userName = $routeParams.userName;
+		$rootScope.username = $routeParams.username;
+    $rootScope.server = $routeParams.server;
 
-    // Store server incase we need to re-request data
-    $rootScope.serverName = $routeParams.userServer;
-
-    // Store time period
     $rootScope.timePeriod = $routeParams.timePeriod;
 
     // Output full server name (oce = Oceanic ect)
-    $rootScope.serverNameFormatted = utilityService.serverFormat($rootScope.serverName);
+    $rootScope.serverFormatted = utilityService.serverFormat($rootScope.server);
 
     // Generate custom dates based upon timePeriod given
     if($routeParams.timePeriod == "Today"){
       var fromDate = new Date();
       var toDate = new Date();
-
-      console.log(fromDate);
-      console.log(toDate);
 
       // Req all graphs and stats
       updateAllGraphsAndStats(fromDate, toDate);
@@ -81,20 +68,15 @@ myApp.controller("todayChartCtrl", ['$scope', '$rootScope', '$http', '$routePara
 
   function updateAllGraphsAndStats(fromDate, toDate){
 
-
-
-
-    // Properly converted functions
     championPieGraphService.update($http, fromDate, toDate);
     statService.getStatAverageDay($http);
     statService.getStatRecordDay($http);
 
-
     // Request W/L stats from server
-    statService.getWinLossToday($rootScope.userName, $rootScope.serverName, $http);
+    statService.getWinLoss($http, $rootScope.username, $rootScope.server);
 
-    // Request 4 different graphs data
-    todayGraphService.update(fromDate, toDate, statService, $http);
+    // Request Line Graph
+    todayGraphService.update($http, fromDate, toDate, statService);
 
   }
 
@@ -107,14 +89,14 @@ myApp.controller("todayChartCtrl", ['$scope', '$rootScope', '$http', '$routePara
     var offset = new Date().getTimezoneOffset();
 
     var requestInfo = {
-        name : $routeParams.userName,
+        name : $routeParams.username,
         server: $routeParams.userServer,
         reqOffset : offset
     };
 
     $http.post('/newPlayer', requestInfo).success(function(response){
         console.log(response);
-        if(response == "ReGraphPlz"){
+        if(response === "ReGraphPlz"){
           
           var fromDate = new Date();
           var toDate = new Date();
