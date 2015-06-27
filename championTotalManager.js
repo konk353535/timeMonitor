@@ -24,13 +24,13 @@ var championsUser = function getUserData(userName, serverName, resToClient) {
       } else {
 
         // Let client know that this user is new, attempt to re-request data
-        responder.send("Error: Specified user could not be found");
+        resToClient.status(404).send(
+        	"Error: Specified user could not be found (total)");
       }
     } else {
 
-      // Invalid summonerName given
-      console.log("Error: Specified user could not be found");
-      responder.send("Error: Specified user could not be found");
+      resToClient.status(404).send("
+      	Error: Specified user could not be found (total)");
     }
 
   });
@@ -58,7 +58,7 @@ function getChampionData(userData, resToClient) {
 	function (err, res){
 
 	  // If there is an error output it to console
-	  if(err) console.log("Error - " + err);
+	  if(err) resToClient.status(404).send("Error (total) - " + err);
 
 	  // If champion totals found, send to formatter
 	  championDataFormat(res, resToClient);
@@ -66,8 +66,6 @@ function getChampionData(userData, resToClient) {
 }
 
 function championDataFormat(championsData, resToClient){
-
-	console.log(championsData);
 
 	var formattedData = [];
 	// { _id = champion id, totalSeconds = totalSeconds}
