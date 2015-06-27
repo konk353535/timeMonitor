@@ -37,6 +37,9 @@ var championTotals = require("./championTotalManager.js");
 // userCounter to get number of users
 var userCounter = require('./userCounter.js');
 
+var graphManager = require('./graphManager.js');
+
+
 var compareManager = require('./compareManager.js');
 
 app.get('/countUsers', function(req,res){
@@ -48,31 +51,28 @@ app.get('/countUsers', function(req,res){
 
 app.post('/championTotals', function(req,res){
 
-	// lowercase playerName
-	var playerObject = req.body;
-	var playerName = playerObject.name;
-	playerName = playerName.toLowerCase();
+	var playerObj = req.body;
+	
+	var server = playerObj.server;
+	var username = playerObj.name;
 
+	username = username.toLowerCase();
 	// Remove spaces
-	playerName = playerName.replace(/\s+/g, '');
+	username = username.replace(/\s+/g, '');
 
-	championTotals.championsUser(playerName, req.body.server, res);
+	championTotals.championsUser(username, server, res);
 });
 
 app.post('/stat', function(req,res){
 
-	var playerObject = req.body;
-	var playerName = playerObject.name;
-
-	// lowercase playerName
-	playerName = playerName.toLowerCase();
-
-	// Remove spaces
-	playerName = playerName.replace(/\s+/g, '');
-
 	var statOptions = req.body;
+	var username = statOptions.name;
 
-	statManager.getStats(playerName, statOptions, res);
+	username = username.toLowerCase();
+	// Remove spaces
+	username = username.replace(/\s+/g, '');
+
+	statManager.getStats(username, statOptions, res);
 })
 
 
@@ -81,10 +81,7 @@ app.get('/', function (req, res) {
 })
 
 app.get('/user/:sName/:serName/:timePeriod', function(req, res){
-	console.log(req.params);
-	console.log("Summ Name: " + req.params.sName);
-	console.log("Server Name: " + req.params.serName);
-	
+
 	if(req.params.timePeriod == "Today"){
 		res.sendFile(__dirname + '/public/userToday.html');
 	} else {
@@ -94,47 +91,44 @@ app.get('/user/:sName/:serName/:timePeriod', function(req, res){
 })
 
 app.get('/compare', function(req, res){
-
 	res.sendFile(__dirname + '/public/compare.html');
 })
 
 app.post('/graph', function(req,res){
-	var graphManager = require('./graphManager.js');
-	var graphManagerOne = graphManager;
 
-	console.log(req.body);
-	
-	var playerObject = req.body;
-	var playerName = playerObject.name;
+	var graphInfo = req.body;
 
-	// lowercase playerName
-	playerName = playerName.toLowerCase();
+	var server = graphInfo.server;
+	var username = graphInfo.name;
 
+	username = username.toLowerCase();
 	// Remove spaces
-	playerName = playerName.replace(/\s+/g, '');
+	username = username.replace(/\s+/g, '');
 
-	console.log("HERE -- " + playerName);
-	// Req.body contains graphName, clientTimeZoneOffSet, dates
-	graphManagerOne.getGraph(playerName, playerObject["server"], req.body, res);
+	graphManager.getGraph(username, server, graphInfo, res);
 })
 
 app.post('/newPlayer', function (req, res) {
-	console.log("Captain transmission recieved - Private Name - " + req.body.name + " - Battalion - "  + req.body.server);
-	userAddManager.addUser(req.body.name, req.body.server, req.body.reqOffset, res);
-	//res.send("Roger that private, info recieved");
+	var username = req.body.name;
+	var server = req.body.server;
+	var offset = req.body.reqOffset;
+
+	userAddManager.addUser(username, server, offset, res);
 });
 
 app.listen(3000);
+
 console.log("Listening on port 3000");
 
-	var baseUser = {
-		summonerName: "iyvy",
-		serverName: "oce"
-	};
+/* Compare Code In Works 
+var baseUser = {
+	summonerName: "iyvy",
+	serverName: "oce"
+};
 
-	var otherUsers = 
-	[{summonerName: "jeffanator", server: "oce"},
-	{summonerName: "omnarino", server: "oce"}];
+var otherUsers = 
+[{summonerName: "jeffanator", server: "oce"},
+{summonerName: "omnarino", server: "oce"}];
 
-	compareManager.compareGraph(baseUser, otherUsers);
-	
+compareManager.compareGraph(baseUser, otherUsers);
+*/
