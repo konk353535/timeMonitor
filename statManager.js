@@ -6,24 +6,17 @@ var gameModel = require("./models/gameModel.js").gameModel;
 var moment = require('moment-timezone');
 
 
-var getStats = function getStat(userName, userServer, statType, responder){
-    // userName/userServer - Given users NAME and SERVER
-    // statType - Type of stat
+var getStats = function getStat(userName, statOptions, responder){
+    // userName - Given to us correctly formatted (spaces + lowercase)
+    // statOptiosn - All other information
     // Responder - so we can send data back to client
 
-    /*
-    Goal of Function
-    1)Get user db info
-    2)Send to specified statType
-    3)Specified statType responds to client with correct information
-    */
-
-    // 2) Store specified function to pass to, based on statType
-
+    var server = statOptions.server;
+    var statType = statOptions.statType;
 
 
     // 1) Get user db info
-    userModel.findOne({"summonerName":userName, "server":userServer}).exec(function (err, userData) {
+    userModel.findOne({"summonerName":userName, "server":server}).exec(function (err, userData) {
         if (err) return console.error(err);
         if(userData !== null){
             // Check user has some data
@@ -36,15 +29,15 @@ var getStats = function getStat(userName, userServer, statType, responder){
                 else if(statType == "averageDay"){
                     averageDay(null, userData, responder);
                 }
-                else if(statType == "winLossDay"){
-                    winLossToday(null, userData, responder);
+                else if(statType == "winLoss"){
+                    winLoss(null, userData, statOptions, responder);
                 }
             }
-        }
-        else{
+        } else{
             // Invalid summonerName given
             console.log("Error: Specified user could not be found");
-            //responder.send("Error: Specified user could not be found");
+            responder.status(404);
+            responder.send("Error: Specified user could not be found");
         }
     });
 
@@ -151,19 +144,22 @@ function averageDayOutputter(firstGame, lastGame, totalTrackedMinutes, responder
     responder.send([averageMinsPerDay]);
 }
 
-function winLossToday(err, userData, responder){
+function winLoss(err, userData, statOptions, responder){
 
-    var now = moment().utcOffset(userData.offset*-1);
+    var fromDate = statOptions.fromDate;
+    var toDate = statOptions.toDate;
+
+    //var now = moment().utcOffset(userData.offset*-1);
 
     // Get first minute of today in client's timezone
-    var todayFirstMin = now;
+    var todayFirstMin = fromDate;
     todayFirstMin = moment(todayFirstMin).seconds(00);
     todayFirstMin = moment(todayFirstMin).minutes(00);
     todayFirstMin = moment(todayFirstMin).hours(00);
     todayFirstMin = moment(todayFirstMin).format();
 
     // Get last minute of today in client's timezone
-    var todayLastMin = now;
+    var todayLastMin = toDate;
     todayLastMin = moment(todayLastMin).seconds(59);
     todayLastMin = moment(todayLastMin).minutes(59);
     todayLastMin = moment(todayLastMin).hours(23);
