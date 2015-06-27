@@ -20,22 +20,28 @@ myApp.factory('statService', function(){
 	*
 	*
 	**/
-	getWinLossToday: function (userName, userServer, $http){
+	getWinLoss: function ($http, fromDate, toDate, username, server){
 
 		// Request server for win loss today
 		$http.post('/stat', {
 
 		  // Pass server users name and server
-		  name: userName,
-		  server: userServer,
+		  name: username,
+		  server: server,
+		  fromDate: fromDate,
+		  toDate: toDate,
 
 		  // Store what type of stat we want
-		  statType: "winLossDay"
+		  statType: "winLoss"
 
 		}).success(function(res){
 
-		  $scope.stats.winsToday = res.wins;
-		  $scope.stats.lossesToday = res.losses;
+			if(res.status == 404){
+				console.log(res);
+			}
+			console.log(res.wins + "/" + res.losses);
+			$scope.stats.wins = res.wins;
+			$scope.stats.losses = res.losses;
 
 		});
 	},
@@ -53,8 +59,8 @@ myApp.factory('statService', function(){
 		$http.post('/stat', {
 
       	// Pass server userName and server
-		name: $scope.userName,
-		server: $scope.serverName,
+		name: $scope.username,
+		server: $scope.server,
 
       	// Store what type of stat i want
 		statType: "averageDay"
@@ -79,8 +85,8 @@ myApp.factory('statService', function(){
 		$http.post('/stat', {
 
 	      	// Pass server users name and server
-			name: $scope.userName,
-			server: $scope.serverName,
+			name: $scope.username,
+			server: $scope.server,
 
 	      	// Store what type of stat we want
 			statType: "recordDay"
