@@ -1,3 +1,4 @@
+
 // Express
 var express = require('express')
 var app = express()
@@ -36,6 +37,7 @@ var championTotals = require("./championTotalManager.js");
 // userCounter to get number of users
 var userCounter = require('./userCounter.js');
 
+var compareManager = require('./compareManager.js');
 
 app.get('/countUsers', function(req,res){
 
@@ -68,25 +70,40 @@ app.post('/stat', function(req,res){
 	// Remove spaces
 	playerName = playerName.replace(/\s+/g, '');
 
-	statManager.getStats(playerName, req.body.server, req.body.statType, res);
+	var statOptions = req.body;
+
+	statManager.getStats(playerName, statOptions, res);
 })
 
 
-app.get('/', function (req, res) {
+app.get('/', function (req, res) {	
 	res.send('Hello World');
 })
 
-app.get('/user/:sName/:serName/', function(req, res){
+app.get('/user/:sName/:serName/:timePeriod', function(req, res){
 	console.log(req.params);
 	console.log("Summ Name: " + req.params.sName);
 	console.log("Server Name: " + req.params.serName);
-	res.sendFile(__dirname + '/public/user.html');
+	
+	if(req.params.timePeriod == "Today"){
+		res.sendFile(__dirname + '/public/userToday.html');
+	} else {
+		res.sendFile(__dirname + '/public/user.html');
+	}
+
+})
+
+app.get('/compare', function(req, res){
+
+	res.sendFile(__dirname + '/public/compare.html');
 })
 
 app.post('/graph', function(req,res){
 	var graphManager = require('./graphManager.js');
 	var graphManagerOne = graphManager;
 
+	console.log(req.body);
+	
 	var playerObject = req.body;
 	var playerName = playerObject.name;
 
@@ -107,5 +124,17 @@ app.post('/newPlayer', function (req, res) {
 	//res.send("Roger that private, info recieved");
 });
 
-app.listen(3000)
+app.listen(3000);
 console.log("Listening on port 3000");
+
+	var baseUser = {
+		summonerName: "iyvy",
+		serverName: "oce"
+	};
+
+	var otherUsers = 
+	[{summonerName: "jeffanator", server: "oce"},
+	{summonerName: "omnarino", server: "oce"}];
+
+	compareManager.compareGraph(baseUser, otherUsers);
+	
