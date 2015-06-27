@@ -41,8 +41,9 @@ var getGraph = function getGraph(userName, serverName, graphOptions,
   } else if (graphOptions.graphType == "allGraph") {
     getUserThenGraph(userName, serverName, graphOptions, allGraph, responder);
   } else {
-    responder.send("We have an error m8 that graphType doesn't exist");
-    console.log("Error incorrect graph name specified for getGraph");
+    responder.status(404).send(
+      "We have an error m8 that graphType doesn't exist");
+
   }
 
 }
@@ -63,7 +64,7 @@ function getUserThenGraph(userName, serverName, graphOptions, graphFunctionName,
   // Query mongodb for user with name and server
   userModel.findOne({"summonerName":userName, "server":serverName}).exec(function (err, userData) {
 
-    if (err) console.error(err);
+    if (err) responder.status(500).send("Error: graphManager+getUser -" + err);
 
     if(userData !== null){
       // User Found
@@ -80,8 +81,8 @@ function getUserThenGraph(userName, serverName, graphOptions, graphFunctionName,
     } else {
 
       // Invalid summonerName given
-      console.log("Error: Specified user could not be found");
-      responder.send("Error: Specified user could not be found");
+      responder.status(404).(
+        "Error: (graphManager get user) Specified user could not be found");
     }
 
   });
@@ -112,7 +113,7 @@ function championDaysGraph(err, userData, graphOptions, responder){
   {dateTime: -1}
   ).exec(function (err, res) {
 
-    if(err) return console.log(err);
+    if(err) responder.status(500).send("Error - " + err);
 
     // Pass found games to analysis function
     analyzeChampionDaysGraph(null, res, userData, responder);
@@ -205,11 +206,11 @@ function daysGraph(err, userData, graphOptions, responder){
   ).exec(
   function (err, res){
 
-    if(err) return console.log(err);
+    if(err) responder.status(500).send("Error - " + err);
 
     // Pass found games to analysis function
-    analyzeGamesDaysGraph(null, res, graphOptions, userData, startDate, endDate, 
-      responder);
+    analyzeGamesDaysGraph(
+      null, res, graphOptions, userData, startDate, endDate, responder);
 
   });
 
@@ -274,8 +275,6 @@ function analyzeGamesDaysGraph(err, gameData, graphOptions, userData, startDate,
   // Load label and data into object
   var graphInfo = {data: tempGraphData, labels: tempGraphLabels}
 
-  //console.log(graphInfo);
-  
   // push object (label + data) to client
   responder.send(graphInfo);
 }
@@ -296,8 +295,6 @@ function analyzeGamesDaysGraph(err, gameData, graphOptions, userData, startDate,
 function todayGraph(err, userData, graphOptions, responder){
 
   console.log("Private give me " + userData._id + " games today!");
-
-
 
   // Get first minute of today in client's timezone
   var todayFirstMin = graphOptions.fromDate;
@@ -324,12 +321,9 @@ function todayGraph(err, userData, graphOptions, responder){
   }).exec(
   function (err, res){
     
-    // Error Occurs
-    if(err) return console.log(err);
+    if(err) responder.status(500).send("Error - " + err);
     
-    // Found games, pass to analysis function
     analyzeGamesTodayGraph(userData, graphOptions, res, responder);
-  
   });
 
 }
