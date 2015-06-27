@@ -3,10 +3,10 @@ Will monitor league of legends players played time by every 4 hours accessing th
 
 The first step in development is to get a solid backend, that can add new users, can users every set period of time, add game information about the user to mongodb
 
-Current List to do
-(1) Breakdown graphController into logical files
-(2) Template the website using angular, (Use inbuilt angular templating)
-(3) Generalize backend to format (sDate, eDate) so we can do custom graphs
-	- So for championPie, multiDayGraph, and stats
-	- All will take two dates as parameters and return based on that
-	- This will make doing 7 day, monthly and all time graphs trivial :)
+Current List to do - Today (View 24 hour day of players play time)
+(1) Make a unique look for when there is no data for that day (mainly for the champion pie that doesn't appear)
+(2) Error handling for today page 
+		- What if the user doesn't exist?
+		- If it's a new user, let them know we're fetching there data ASAP
+		- Look at other possible avenues (how does the server react under load)
+(3) In general clean up the today controller + html
