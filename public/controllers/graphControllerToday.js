@@ -68,12 +68,15 @@ myApp.controller("todayChartCtrl", ['$scope', '$rootScope', '$http', '$routePara
 
   function updateAllGraphsAndStats(fromDate, toDate){
 
+    var username = $rootScope.username;
+    var server = $rootScope.server;
+
     championPieGraphService.update($http, fromDate, toDate);
     statService.getStatAverageDay($http);
     statService.getStatRecordDay($http);
 
     // Request W/L stats from server
-    statService.getWinLoss($http, $rootScope.username, $rootScope.server);
+    statService.getWinLoss($http, fromDate, toDate, username, server);
 
     // Request Line Graph
     todayGraphService.update($http, fromDate, toDate, statService);
@@ -90,7 +93,7 @@ myApp.controller("todayChartCtrl", ['$scope', '$rootScope', '$http', '$routePara
 
     var requestInfo = {
         name : $routeParams.username,
-        server: $routeParams.userServer,
+        server: $routeParams.server,
         reqOffset : offset
     };
 
