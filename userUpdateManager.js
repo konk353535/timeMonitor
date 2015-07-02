@@ -87,6 +87,8 @@ function scanUserGames(user, resToClient){
 				}
 				else {
 					console.log("Invalid Summoner Name or Server");
+					// Flag user for not being legit
+					updateNumber -= 1;
 				}
 			});
 		}
@@ -214,8 +216,7 @@ var updateNewUser = function updateNewUser(summonerId, userServer, resToClient){
 	    		// New User
 	    		// 2) If lastMatchId is 25, send this user to update function
   				scanUserGames(userData, resToClient);
-	    	}
-	    	else {
+	    	} else {
 
 	    		// Existing User
 	    		resToClient.send("UserUpdated");

@@ -20,6 +20,7 @@ var addUser = function getSummonerId(summonerName, serverName, offset, res){
 		}
 		else {
 			console.log("Invalid Summoner Name or Server");
+			res.status(404).send("Error, invalid summoner name or server");
 		}
 	});
 }
@@ -40,7 +41,12 @@ function newUserAdd(playerData, serverName, offset, resToClient){
 	playerData = playerData[playerKey];
 
 	var summonerNameNew = playerData["name"];
+
+	// Make sure lower case
 	summonerNameNew = summonerNameNew.toLowerCase();
+
+	// Remove spaces
+	summonerNameNew = summonerNameNew.replace(/\s+/g, '');
 
 	var summonerID = playerData["id"];
 
@@ -50,12 +56,11 @@ function newUserAdd(playerData, serverName, offset, resToClient){
 	// Run mongoDb Query to check if this is existing/new user
 	userModel.findOne({"summonerId":summonerID, "server":serverName}).exec(
 	function (err, userData) {
-	    if (err) return console.error(err);
-	    if(userData !== null){
+	    if (err) res.status(500).send(err);
+	    if(userData !== null && userData.lastMatchId > 25){
 	    	// Existing User
 	    	updateUser(summonerID, serverName, summonerNameNew, offset, resToClient);
-	    }
-	    else {
+	    } else {
 	    	// New User
 	    	newUser(summonerID, serverName, summonerNameNew, offset, resToClient);
 	    }
@@ -77,7 +82,7 @@ function newUser (summonerID, serverName, summonerNameNew, offset, resToClient) 
 
 	userModel.create(newUser, function (err, newUser) {
 
-	  if (err) return console.error(err);
+	  if (err) res.status(500).send(err);
 	  userUpdateManager.updateNewUser(summonerID, serverName, resToClient);
 
 	});

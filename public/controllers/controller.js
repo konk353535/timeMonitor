@@ -1,6 +1,9 @@
-var myApp = angular.module('myApp', ["chart.js"]);
+var myApp = angular.module('myApp', ["chart.js", "ngRoute"]);
 
-myApp.controller('AppCtrl', ['$scope', '$rootScope', '$http', function($scope, $rootScope, $http) {
+myApp.controller('AppCtrl', ['$scope', '$rootScope', '$http', '$routeParams', function($scope, $rootScope, $http, $routeParams) {
+
+
+    console.log($routeParams.userName);
 
     // Set default select value to oce
     $scope.player = {server: "oce", name: ""};

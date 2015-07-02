@@ -7,7 +7,8 @@ var UserSchema = mongoose.Schema({
   , server  :  { type: String}
   , summonerName   :  { type: String }
   , updated :  { type: Boolean, default: false }
-  , lastMatchId : { type:Number}
+  , lastMatchId : { type:Number, default: 25}
+  , offset : {type: Number}
 });
 
 var userModel = mongoose.model('users', UserSchema);

@@ -24,13 +24,11 @@ var championsUser = function getUserData(userName, serverName, resToClient) {
       } else {
 
         // Let client know that this user is new, attempt to re-request data
-        resToClient.status(404).send(
-        	"Error: Specified user could not be found (total)");
+        resToClient.status(404).send("Error: Specified user could not be found (total)");
       }
     } else {
 
-      resToClient.status(404).send("
-      	Error: Specified user could not be found (total)");
+      resToClient.status(404).send("Error: Specified user could not be found (total)");
     }
 
   });

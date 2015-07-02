@@ -81,8 +81,7 @@ function getUserThenGraph(userName, serverName, graphOptions, graphFunctionName,
     } else {
 
       // Invalid summonerName given
-      responder.status(404).(
-        "Error: (graphManager get user) Specified user could not be found");
+      responder.status(404).send("Error: (graphManager get user) Specified user could not be found");
     }
 
   });

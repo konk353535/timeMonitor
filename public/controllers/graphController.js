@@ -23,11 +23,32 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', 'util
     // Store server incase we need to re-request data
     $rootScope.serverName = $routeParams.userServer;
 
+    // Store time period
+    $rootScope.timePeriod = $routeParams.timePeriod;
+
     // Output full server name (oce = Oceanic ect)
     $rootScope.serverNameFormatted = utilityService.serverFormat($rootScope.serverName);
 
-    // Req all graphs and stats
-    updateAllGraphsAndStats();
+    // Generate custom dates based upon timePeriod given
+    if($routeParams.timePeriod == "Today"){
+      var fromDate = new Date();
+      var toDate = new Date();
+
+      // Req all graphs and stats
+      updateAllGraphsAndStats(fromDate, toDate);
+    } else {
+      
+      var fromDate = new Date();
+      var toDate = new Date();
+
+      // Req all graphs and stats
+      updateAllGraphsAndStats(fromDate, toDate);
+    }
+
+
+
+  
+
   }
   else {
 
@@ -38,7 +59,10 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', 'util
     multiDayGraphService.inital();
   }
 
-  function updateAllGraphsAndStats(){
+  function updateAllGraphsAndStats(fromDate, toDate){
+
+    // Properly converted functions
+    championPieGraphService.update($http, fromDate, toDate);
 
     // Request W/L stats from server
     statService.getWinLossToday($rootScope.userName, $rootScope.serverName, $http);
@@ -46,7 +70,7 @@ myApp.controller("todayChartCtrl", ['$rootScope', '$http', '$routeParams', 'util
     // Request 4 different graphs data
     todayGraphService.update(statService, $http);
     allGraphService.update(statService, $http);
-    championPieGraphService.update($http);
+    
     multiDayGraphService.update($http);
 
     getChampionTotals();
