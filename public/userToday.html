@@ -26,8 +26,12 @@
     h3 {
       margin-top : 40px;
     }
-    h1,h2,h3,h4 {
-      color: #fff2a3;
+    h3,h4 {
+      color: #94e2e4;
+      font-family: 'Open Sans', sans-serif;
+    }
+    h1,h2 {
+      color: #2e2e2e;
       font-family: 'Open Sans', sans-serif;
     }
     .well {
@@ -45,7 +49,7 @@
     }
   </style>
 </head>
-<body style="background-color: #3b3b3b; height: 100%;" ng-controller="todayChartCtrl" id="chartApp">
+<body style="background-color: #ededed; height: 100%;" ng-controller="todayChartCtrl" id="chartApp">
   <!-- Nav bar -->
   <nav class="navbar navbar-default navbar-zil navbar-inverse">
     <div class="container">
@@ -88,11 +92,17 @@
   <!-- End of navbar -->
 
   <div class="container">
+    <div ng-repeat="errorMessage in errors" class="alert alert-danger">
+      {{errorMessage}}
+    </div>
+  </div>
+
+  <div class="container">
 
     <div style="display:table">
       <img src="img/zilean-graphic.png" class="img-responsive" 
       style="height: 100px; width: auto; vertical-align:middle; display:inline-block;">
-     <span style="color: #cd6066; display:table-cell; font-size:48px; vertical-align: middle">{{userName}} | {{serverNameFormatted}}
+     <span style="color: #cd6066; display:table-cell; font-size:48px; vertical-align: middle">{{username}} | {{serverFormatted}}
      </span>
     </div>
 
@@ -116,7 +126,6 @@
             close-text="Close" >
       </div>
     </div>
-    {{demo.dateFrom}}
     <div class="row" >
       <div class="col-md-12" style="text-align:center">
 
@@ -134,17 +143,17 @@
         style="text-align:center;">
         <h2>Stats</h2>
         <div style="background-color: #2e2e2e; padding-top: 30px; height: 398px; padding-bottom: 30px; border: 1px solid rgb(69, 114, 167)">
-        <h3>{{(currentDate | date:'d MMM yyyy') || "Today"}}
-         : {{stats.todayMinutes/60 | number:2}} hr</h3>
+        <h3>{{ (currentDate | date:'d MMM yyyy') || "Today" }} : 
+            {{ stats.todayMinutes/60 | number : 2 }} hr</h3>
         <h3>Average Day : {{stats.averageDayMinutes/60 | number:2}} hr</h3>
         <h3>Record : {{stats.recordDayMinutes/60 | number:2}} hr 
           <small>({{stats.recordDayDate | date : 'mediumDate'}})</small>
         </h3>
         <h3>
           Win/Loss :
-          <div style="color:green; display: inline">{{stats.winsToday}}</div> 
+          <div style="color:green; display: inline">{{stats.wins}}</div> 
           / 
-          <div style="color:red; display: inline">{{stats.lossesToday}}</div>
+          <div style="color:red; display: inline">{{stats.losses}}</div>
           <small>
             ({{stats.winsToday/(stats.lossesToday+stats.winsToday) * 100 
             | number: 2}}%)
@@ -157,6 +166,7 @@
         <highchart id="chart2" config="champChart.chartConfig" class="span10"></highchart>
       </div>
     </div>
+    <br /><br />
 
 
 <!-- Jquery for highcharts -->
