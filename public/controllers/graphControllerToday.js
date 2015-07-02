@@ -5,6 +5,8 @@ myApp.controller("todayChartCtrl", ['$scope', '$rootScope', '$http', '$routePara
   // Only scope we want is the rootScope
 	$scope = $rootScope;
 
+  $scope.errors = [];
+
   // Set default select value to oce
   $scope.player = {server: "oce", name: ""};
 
@@ -105,6 +107,10 @@ myApp.controller("todayChartCtrl", ['$scope', '$rootScope', '$http', '$routePara
           var toDate = new Date();
           updateAllGraphsAndStats(fromDate, toDate);
         }
+    }).
+    error(function(response){
+      console.log("An error has occured");
+      $scope.errors.push(response);
     });
   }
 
