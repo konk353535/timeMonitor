@@ -58,7 +58,7 @@ myApp.factory('todayGraphService', function(){
       * requests server for data to graph the 24 hours graph
       *
     **/
-    update: function (fromDate, toDate, statService, $http){
+    update: function ($http, fromDate, toDate, statService){
 
       // Gets clients timezone offset
       var offset = new Date().getTimezoneOffset();
@@ -74,8 +74,8 @@ myApp.factory('todayGraphService', function(){
         graphType: "today",
 
         // Store users name and server
-        name: $scope.userName,
-        server: $scope.serverName
+        name: $scope.username,
+        server: $scope.server
 
       }).success(function(response){
         console.log("Day reponse + " + response);
@@ -122,6 +122,9 @@ myApp.factory('todayGraphService', function(){
           // Update today stat now as depedant on today chart data
           statService.getToday(customTodayData);
         }
+      }).
+      error(function(response){
+        $scope.errors.push(response);
       });
     }
 
