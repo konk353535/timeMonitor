@@ -50,7 +50,7 @@ myApp.factory('championPieGraphService', function(){
       * Once recieves graph the data given on a pie chart
       *
     **/
-  	update: function ($http, fromDate, toDate){
+  	update: function ($http, fromDate, toDate, statService){
 
       
       // Get current date for client
@@ -62,7 +62,7 @@ myApp.factory('championPieGraphService', function(){
 
       var toDate = new Date(toDate.getFullYear(), 
                             toDate.getMonth(), 
-                            toDate.getDate(), 23, 59, 99, 99);
+                            toDate.getDate(), 23, 59, 59, 99);
 
       
       // Store users timezone
@@ -99,11 +99,13 @@ myApp.factory('championPieGraphService', function(){
           // Variables for custom array to send to highcharts
           var graphData = graphInfo.data;
           var labelData = graphInfo.labels;
-          var seriesData = [];
+          var winData = graphInfo.winData;
+
+          var seriesData = []
 
           for(var i = 0; i < graphData.length; i++){
             // Each data point is [label, value]
-            seriesData[i] = [labelData[i], graphData[i]];
+            seriesData[i] = [labelData[i],graphData[i]];
           }
 
           $scope.champChart.chartConfig.series = [{
@@ -125,8 +127,18 @@ myApp.factory('championPieGraphService', function(){
     			
           // It's Loaded okay
           $scope.champChart.chartConfig.loading = false;
+
+          // If statService is given (Is this not a 24hr graph)
+          if(statService){
+            statService.getBestChampion(labelData, winData);
+            statService.getFavouriteChampion(labelData, winData);
+          }
+
         }
-  		});
+  		}).
+      error(function(response){
+        $scope.errors.push(response);
+      });
   	}
   }
 });
