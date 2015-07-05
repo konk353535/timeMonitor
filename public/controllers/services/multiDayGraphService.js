@@ -22,6 +22,9 @@ myApp.factory('multiDayGraphService', function(){
                   type: 'datetime',
                   title : {
                     text: 'Date'
+                  },
+                  dateTimeLabelFormats : {
+                    day: "%a"
                   }
           },
           yAxis: {
@@ -48,20 +51,17 @@ myApp.factory('multiDayGraphService', function(){
       * updateMultiDayGraph Requests server for data for weekGraph
       * Once recieves weekGraph data, updates graph to display new info
     **/
-  	update: function ($http){
+  	update: function ($http, fromDate, toDate, statService){
 
-      // Get current date for client
-  		var n = new Date();
+  		var fromDate = new Date(fromDate.getFullYear(), 
+                              fromDate.getMonth(), 
+                              fromDate.getDate(), 
+                              0, 0, 0, 0);
 
-  		var fromDate = new Date(
-        n.getFullYear(), (n.getMonth()), n.getDate(), 0, 0, 0, 0);
-  		var toDate = new Date(
-        n.getFullYear(), (n.getMonth()), n.getDate(), 23, 59, 99, 99);
-
-      // Set From date (date 7 days ago)
-      // Set To date (end of today)
-  		toDate.setDate(fromDate.getDate());
-  		fromDate.setDate(fromDate.getDate() - 6);
+  		var toDate = new Date(toDate.getFullYear(), 
+                            toDate.getMonth(), 
+                            toDate.getDate(), 
+                            23, 59, 59, 99);
 
       // Store timezone for server
   		var offset = new Date().getTimezoneOffset();
@@ -80,8 +80,8 @@ myApp.factory('multiDayGraphService', function(){
   			endDate: toDate,
 
         // Users name and server
-  			name: $scope.userName,
-  			server: $scope.serverName
+  			name: $scope.username,
+  			server: $scope.server
 
   		}).success(function(response){
   			
@@ -92,7 +92,6 @@ myApp.factory('multiDayGraphService', function(){
 
           // Output response
     			console.log(graphInfo.data);
-    			console.log(graphInfo.labels);
 
     			$scope.weekChart.chartConfig.series = [{
             // Time interval is 24 hours (day)
@@ -122,8 +121,16 @@ myApp.factory('multiDayGraphService', function(){
 
           // Remove loading overlay as we've loaded stuff
           $scope.weekChart.chartConfig.loading = false;
+
+          // Update total statistic
+          statService.getTotal(graphInfo.data);
+        } else {
+          console.log("Error + " + response)
         }
-  		});
+  		}).
+      error(function(response){
+        $scope.errors.push(response);
+      });;
   	}
   }
 });
