@@ -111,20 +111,73 @@ myApp.factory('statService', function(){
 	},
 
 	/**
-	* getToday uses the given today data, and sums it
+	* getTotal uses the given data, and sums it
 	*
 	*
 	**/
-	getToday : function(todayDataPoints){
-		console.log(todayDataPoints);
+	getTotal : function(allDataPoints){
 
 		var sum = 0;
 
-		for (i in todayDataPoints) {
-			sum += todayDataPoints[i][1];
+		for (i in allDataPoints) {
+			sum += allDataPoints[i];
+		}
+		console.log("Sum is " + sum);
+		$scope.stats.totalMinutes = sum;
+	},
+
+	/**
+	* Displays the highest win rate champion, for given time period
+	*
+	*
+	**/
+	getBestChampion : function(labelData, winData){
+
+		var maxWinRate = -1;
+		var maxWinRateI = -1;
+
+		for(var i = 0; i < winData.length; i++){
+			var winRate = 
+				(winData[i][0]) /
+				(winData[i][0] + winData[i][1]);
+
+			if(winRate > maxWinRate){
+				maxWinRateI = i;
+				maxWinRate = winRate;
+			}
+			
 		}
 
-		$scope.stats.todayMinutes = sum;
+		$scope.bestChampionName = labelData[maxWinRateI];
+		$scope.bestChampionWinRate = maxWinRate * 100;
+
+
+	},
+
+	/**
+	* Displays the most played champion, (# games)
+	*
+	*
+	**/
+	getFavouriteChampion : function(labelData, winData){
+
+		var maxGames = -1;
+		var maxGamesIndex = -1;
+
+		for(var i = 0; i < winData.length; i++){
+			var games = winData[i][0] + winData[i][1];
+
+			if(games > maxGames){
+				maxGames = games;
+				maxGamesIndex = i;
+			}
+		}
+
+		$scope.favChampName = labelData[maxGamesIndex];
+		$scope.favChampNumGames = maxGames;
+
+
+
 	}
 
 
