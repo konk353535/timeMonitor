@@ -141,6 +141,8 @@ function analyzeChampionDaysGraph(err, gameData, userData, responder){
   // Store duration of game's played for champion
   var championGameCounts = [];
 
+  var championWinCounts = [];
+
   // Iterate for each game
   gameData.forEach(function(game){
 
@@ -152,6 +154,13 @@ function analyzeChampionDaysGraph(err, gameData, userData, responder){
 
       championGameCounts[champIdIndex] = Math.round(
         (championGameCounts[champIdIndex] + duration) * 100) / 100;
+
+      if(game.isWin){
+        championWinCounts[champIdIndex][0] += 1;
+      } else {
+        championWinCounts[champIdIndex][1] += 1;
+      }
+      
     } else {
 
       // This champion is not in the list, add it
@@ -162,6 +171,15 @@ function analyzeChampionDaysGraph(err, gameData, userData, responder){
       var duration = Math.round(game.duration / 3600 * 100) / 100;
 
       championGameCounts[champIdIndex] = duration;
+
+      if(game.isWin){
+        // champion W/L
+        championWinCounts[champIdIndex] = [1,0];
+      } else {
+        // champion W/L
+        championWinCounts[champIdIndex] = [0,1];
+      }
+
     }
 
   });
@@ -170,7 +188,10 @@ function analyzeChampionDaysGraph(err, gameData, userData, responder){
   var championNames = staticManager.getChampNames(championIds);
 
   // Store Champion Names & Champion Durations in object
-  var championPieInfo = {data: championGameCounts, labels: championNames};
+  var championPieInfo = {
+                        data: championGameCounts, 
+                        labels: championNames, 
+                        winData: championWinCounts};
 
   // Send Names and Counts to client, so it can draw a pritty graph
   responder.send(championPieInfo);
@@ -242,17 +263,11 @@ function analyzeGamesDaysGraph(err, gameData, graphOptions, userData, startDate,
   // tempGraphData is in minutes
   var tempGraphData = [];
 
-  // tempGraphLabels are Apr 22nd
-  var tempGraphLabels = [];
-
   // The first label is the first day
   var tempDateLabel = startDate;
 
   // Initalise array of 0's for data
   for(var i=0;i<daysBetween;i++){
-    tempGraphLabels.push(moment(tempDateLabel).format("MMM Do"));
-    // Step forward one day, to generate labels
-    tempDateLabel = moment(tempDateLabel).add(1, 'days');
     tempGraphData.push(0);
   }
 
@@ -272,7 +287,7 @@ function analyzeGamesDaysGraph(err, gameData, graphOptions, userData, startDate,
   });
 
   // Load label and data into object
-  var graphInfo = {data: tempGraphData, labels: tempGraphLabels}
+  var graphInfo = {data: tempGraphData}
 
   // push object (label + data) to client
   responder.send(graphInfo);
