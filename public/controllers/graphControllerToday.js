@@ -73,7 +73,7 @@ myApp.controller("todayChartCtrl", ['$scope', '$rootScope', '$http', '$routePara
     var username = $rootScope.username;
     var server = $rootScope.server;
 
-    championPieGraphService.update($http, fromDate, toDate);
+    championPieGraphService.update($http, fromDate, toDate, null);
     statService.getStatAverageDay($http);
     statService.getStatRecordDay($http);
 
