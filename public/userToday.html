@@ -144,7 +144,7 @@
         <h2>Stats</h2>
         <div style="background-color: #2e2e2e; padding-top: 30px; height: 398px; padding-bottom: 30px; border: 1px solid rgb(69, 114, 167)">
         <h3>{{ (currentDate | date:'d MMM yyyy') || "Today" }} : 
-            {{ stats.todayMinutes/60 | number : 2 }} hr</h3>
+            {{ stats.totalMinutes/60 | number : 2 }} hr</h3>
         <h3>Average Day : {{stats.averageDayMinutes/60 | number:2}} hr</h3>
         <h3>Record : {{stats.recordDayMinutes/60 | number:2}} hr 
           <small>({{stats.recordDayDate | date : 'mediumDate'}})</small>
@@ -155,7 +155,7 @@
           / 
           <div style="color:red; display: inline">{{stats.losses}}</div>
           <small>
-            ({{stats.winsToday/(stats.lossesToday+stats.winsToday) * 100 
+            ({{stats.wins/(stats.losses+stats.wins) * 100 
             | number: 2}}%)
           </small>
         </h3>
