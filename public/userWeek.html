@@ -112,9 +112,9 @@
     <div class="row" style="text-align:center">
       <div class="col-md-6">
         <h2 style="margin-top: 0px; margin-bottom: 10px;">
-          {{(fromDate | date:'d MMM') || "This Week"}}
+          {{(fromDate | date:'MMM d') || "This Week"}}
           {{(fromDate !== undefined ? "-" : "")}}
-          {{(toDate | date:'d MMM')}}
+          {{(toDate | date:'MMM d, yyyy')}}
         </h2>
       </div>
       <div class="col-md-6">
