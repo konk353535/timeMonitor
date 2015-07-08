@@ -1,6 +1,6 @@
 
 // Access Controller for graph page
-myApp.controller("weekChartCtrl", ['$scope', '$rootScope', '$http', '$routeParams', 'utilityService' ,'statService', 'multiDayGraphService', 'championPieGraphService', function ($normalScope, $rootScope, $http, $routeParams, utilityService, statService, multiDayGraphService, championPieGraphService) {
+myApp.controller("monthChartCtrl", ['$scope', '$rootScope', '$http', '$routeParams', 'utilityService' ,'statService', 'multiDayGraphService', 'championPieGraphService', function ($normalScope, $rootScope, $http, $routeParams, utilityService, statService, multiDayGraphService, championPieGraphService) {
 
   // Only scope we want is the rootScope
 	$scope = $rootScope;
@@ -27,15 +27,18 @@ myApp.controller("weekChartCtrl", ['$scope', '$rootScope', '$http', '$routeParam
   $normalScope.dateChanged = function(){
       
 
-      var fromDate = new Date($normalScope.demo.dtFrom);
-      var toDate = new Date($normalScope.demo.dtFrom);
+      var d = new Date($normalScope.demo.dtFrom);
 
-      toDate.setDate(toDate.getDate() + 6);
-      
-      $scope.fromDate = fromDate;
-      $scope.toDate = toDate;
+      var firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
+      var lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0);
 
-      updateAllGraphsAndStats(fromDate, toDate);
+
+      // Update vars, to display to front end
+      $scope.fromDate = firstDay;
+      $scope.toDate = lastDay;
+
+      // Req all graphs and stats
+      updateAllGraphsAndStats(firstDay, lastDay);
   }
 
   // If we have pulled users name and server from url
@@ -52,21 +55,20 @@ myApp.controller("weekChartCtrl", ['$scope', '$rootScope', '$http', '$routeParam
     $rootScope.serverFormatted = utilityService.serverFormat($rootScope.server);
 
     // Generate custom dates based upon timePeriod given
-    if($routeParams.timePeriod == "ThisWeek"){
+    if($routeParams.timePeriod == "ThisMonth"){
 
-      var toDate = new Date();
-      var fromDate = new Date();
-
-      fromDate.setDate(toDate.getDate() - 6);
+      var d = new Date();
+      var firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
+      var lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0);
 
       // Req all graphs and stats
-      updateAllGraphsAndStats(fromDate, toDate);
+      updateAllGraphsAndStats(firstDay, lastDay);
     } 
 
   } else {
 
     // Initalize Two Graphs
-    multiDayGraphService.inital();
+    multiDayGraphService.inital("month");
     championPieGraphService.inital();
   }
 
