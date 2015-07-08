@@ -86,6 +86,8 @@ app.get('/user/:sName/:serName/:timePeriod', function(req, res){
 		res.sendFile(__dirname + '/public/userToday.html');
 	} else if(req.params.timePeriod == "ThisWeek") {
 		res.sendFile(__dirname + '/public/userWeek.html');
+	} else if(req.params.timePeriod == "ThisMonth"){
+		res.sendFile(__dirname + '/public/userMonth.html');
 	} else {
 		res.sendFile(__dirname + '/public/user.html');
 	}
