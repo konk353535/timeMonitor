@@ -66,7 +66,7 @@ myApp.controller("weekChartCtrl", ['$scope', '$rootScope', '$http', '$routeParam
   } else {
 
     // Initalize Two Graphs
-    multiDayGraphService.inital();
+    multiDayGraphService.inital("week");
     championPieGraphService.inital();
   }
 
