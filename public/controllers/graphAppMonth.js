@@ -6,7 +6,7 @@ myApp.config(function($routeProvider, $locationProvider) {
   $routeProvider.when('/user/:username/:server/:timePeriod', {
     template: '',
     // Send routeParams to this controller
-    controller: 'weekChartCtrl',
+    controller: 'monthChartCtrl',
     resolve: {
       // Wait 50 milliseconds before we send params
       delay: function($q, $timeout) {
