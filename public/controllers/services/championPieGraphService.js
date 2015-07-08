@@ -108,6 +108,8 @@ myApp.factory('championPieGraphService', function(){
             seriesData[i] = [labelData[i],graphData[i]];
           }
 
+          seriesData.sort(function(a,b){ return b[1] - a[1]});
+
           $scope.champChart.chartConfig.series = [{
             
             // Size and innersize to make it a doughnut (cut out the middle)
