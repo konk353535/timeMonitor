@@ -1,6 +1,6 @@
 
 // Access Controller for graph page
-myApp.controller("todayChartCtrl", ['$scope', '$rootScope', '$http', '$routeParams', 'utilityService' ,'statService', 'todayGraphService', 'championPieGraphService', function ($normalScope, $rootScope, $http, $routeParams, utilityService, statService, todayGraphService, championPieGraphService) {
+myApp.controller("todayChartCtrl", ['$location', '$scope', '$rootScope', '$http', '$routeParams', 'utilityService' ,'statService', 'todayGraphService', 'championPieGraphService', function ($location, $normalScope, $rootScope, $http, $routeParams, utilityService, statService, todayGraphService, championPieGraphService) {
 
   // Only scope we want is the rootScope
 	$scope = $rootScope;
@@ -34,6 +34,12 @@ myApp.controller("todayChartCtrl", ['$scope', '$rootScope', '$http', '$routePara
       var toDate = new Date($normalScope.demo.dtFrom);
 
       updateAllGraphsAndStats(fromDate, toDate);
+
+      // Need to change the :date param in url to current date
+      var dispDate = fromDate.getFullYear() + "-" +
+                     (fromDate.getMonth()+1) + "-" + 
+                     fromDate.getDate(); 
+      $location.path("user/" + $scope.username + "/" + $scope.server + "/day/" + dispDate);
   }
 
 
@@ -53,13 +59,20 @@ myApp.controller("todayChartCtrl", ['$scope', '$rootScope', '$http', '$routePara
     $rootScope.serverFormatted = utilityService.serverFormat($rootScope.server);
 
     // Generate custom dates based upon timePeriod given
-    if($routeParams.timePeriod == "Today"){
+    if($routeParams.date == "Today"){
       var fromDate = new Date();
       var toDate = new Date();
 
       // Req all graphs and stats
       updateAllGraphsAndStats(fromDate, toDate);
-    } 
+    } else {
+
+      var fromDate = new Date($routeParams.date);
+      var toDate = new Date($routeParams.date);
+
+      // Req all graphs and stats
+      updateAllGraphsAndStats(fromDate, toDate);
+    }
 
   } else {
 
@@ -73,12 +86,9 @@ myApp.controller("todayChartCtrl", ['$scope', '$rootScope', '$http', '$routePara
     var username = $rootScope.username;
     var server = $rootScope.server;
 
-    championPieGraphService.update($http, fromDate, toDate, null);
+    championPieGraphService.update($http, fromDate, toDate, statService);
     statService.getStatAverageDay($http);
     statService.getStatRecordDay($http);
-
-    // Request W/L stats from server
-    statService.getWinLoss($http, fromDate, toDate, username, server);
 
     // Request Line Graph
     todayGraphService.update($http, fromDate, toDate, statService);
