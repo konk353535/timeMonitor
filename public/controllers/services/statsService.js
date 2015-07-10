@@ -20,30 +20,18 @@ myApp.factory('statService', function(){
 	*
 	*
 	**/
-	getWinLoss: function ($http, fromDate, toDate, username, server){
+	getWinLoss: function (championWinLoss){
+		var totalWins = 0;
+		var totalLosses = 0;
 
-		// Request server for win loss today
-		$http.post('/stat', {
+		for(var i = 0; i < championWinLoss.length; i++){
+			totalWins += championWinLoss[i][0];
+			totalLosses += championWinLoss[i][1];
+		}
 
-		  // Pass server users name and server
-		  name: username,
-		  server: server,
-		  fromDate: fromDate,
-		  toDate: toDate,
-
-		  // Store what type of stat we want
-		  statType: "winLoss"
-
-		}).success(function(res){
-
-			if(res.status == 404){
-				console.log(res);
-			}
-			console.log(res.wins + "/" + res.losses);
-			$scope.stats.wins = res.wins;
-			$scope.stats.losses = res.losses;
-
-		});
+		$scope.stats.wins = totalWins;
+		$scope.stats.losses = totalLosses;
+		
 	},
 
 	/**
