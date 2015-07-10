@@ -134,6 +134,9 @@ myApp.factory('championPieGraphService', function(){
           if(statService){
             statService.getBestChampion(labelData, winData);
             statService.getFavouriteChampion(labelData, winData);
+
+            // Calculate W/L for given time
+            statService.getWinLoss(winData);
           }
 
         }
