@@ -3,7 +3,7 @@ var myApp = angular.module('myCharts', ["chart.js", "ngRoute", "highcharts-ng","
 
 myApp.config(function($routeProvider, $locationProvider) {
 
-  $routeProvider.when('/user/:username/:server/:timePeriod', {
+  $routeProvider.when('/user/:username/:server/month/:date', {
     template: '',
     // Send routeParams to this controller
     controller: 'monthChartCtrl',
