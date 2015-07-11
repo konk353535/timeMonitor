@@ -35,10 +35,11 @@ myApp.controller("todayChartCtrl", ['$location', '$scope', '$rootScope', '$http'
 
       updateAllGraphsAndStats(fromDate, toDate);
 
-      // Need to change the :date param in url to current date
+      // Need to change the :date param in url to new date
       var dispDate = fromDate.getFullYear() + "-" +
                      (fromDate.getMonth()+1) + "-" + 
                      fromDate.getDate(); 
+
       $location.path("user/" + $scope.username + "/" + $scope.server + "/day/" + dispDate);
   }
 
@@ -67,8 +68,12 @@ myApp.controller("todayChartCtrl", ['$location', '$scope', '$rootScope', '$http'
       updateAllGraphsAndStats(fromDate, toDate);
     } else {
 
+
       var fromDate = new Date($routeParams.date);
       var toDate = new Date($routeParams.date);
+      
+      // Update Title Date
+      $scope.currentDate = fromDate;
 
       // Req all graphs and stats
       updateAllGraphsAndStats(fromDate, toDate);
