@@ -80,13 +80,13 @@ app.get('/', function (req, res) {
 	res.send('Hello World');
 })
 
-app.get('/user/:sName/:serName/:timePeriod', function(req, res){
+app.get('/user/:sName/:serName/:timePeriod/:date', function(req, res){
 
-	if(req.params.timePeriod == "Today"){
+	if(req.params.timePeriod == "day"){
 		res.sendFile(__dirname + '/public/userToday.html');
-	} else if(req.params.timePeriod == "ThisWeek") {
+	} else if(req.params.timePeriod == "week") {
 		res.sendFile(__dirname + '/public/userWeek.html');
-	} else if(req.params.timePeriod == "ThisMonth"){
+	} else if(req.params.timePeriod == "month"){
 		res.sendFile(__dirname + '/public/userMonth.html');
 	} else {
 		res.sendFile(__dirname + '/public/user.html');
