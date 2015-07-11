@@ -1,6 +1,6 @@
 
 // Access Controller for graph page
-myApp.controller("monthChartCtrl", ['$scope', '$rootScope', '$http', '$routeParams', 'utilityService' ,'statService', 'multiDayGraphService', 'championPieGraphService', function ($normalScope, $rootScope, $http, $routeParams, utilityService, statService, multiDayGraphService, championPieGraphService) {
+myApp.controller("monthChartCtrl", ['$location', '$scope', '$rootScope', '$http', '$routeParams', 'utilityService' ,'statService', 'multiDayGraphService', 'championPieGraphService', function ($location, $normalScope, $rootScope, $http, $routeParams, utilityService, statService, multiDayGraphService, championPieGraphService) {
 
   // Only scope we want is the rootScope
 	$scope = $rootScope;
@@ -32,13 +32,20 @@ myApp.controller("monthChartCtrl", ['$scope', '$rootScope', '$http', '$routePara
       var firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
       var lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0);
 
-
       // Update vars, to display to front end
       $scope.fromDate = firstDay;
       $scope.toDate = lastDay;
 
       // Req all graphs and stats
       updateAllGraphsAndStats(firstDay, lastDay);
+
+      // Need to change the :date param in url to new date
+      var dispDate = firstDay.getFullYear() + "-" +
+                     (firstDay.getMonth()+1) + "-" + 
+                     firstDay.getDate(); 
+
+      $location.path("user/" + $scope.username + "/" + $scope.server + "/month/" + dispDate);
+
   }
 
   // If we have pulled users name and server from url
@@ -55,7 +62,7 @@ myApp.controller("monthChartCtrl", ['$scope', '$rootScope', '$http', '$routePara
     $rootScope.serverFormatted = utilityService.serverFormat($rootScope.server);
 
     // Generate custom dates based upon timePeriod given
-    if($routeParams.timePeriod == "ThisMonth"){
+    if($routeParams.date == "ThisMonth"){
 
       var d = new Date();
       var firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
@@ -63,7 +70,20 @@ myApp.controller("monthChartCtrl", ['$scope', '$rootScope', '$http', '$routePara
 
       // Req all graphs and stats
       updateAllGraphsAndStats(firstDay, lastDay);
-    } 
+    } else {
+
+      var d = new Date($routeParams.date);
+
+      var firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
+      var lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+
+      // Update vars, to display to front end
+      $scope.fromDate = firstDay;
+      $scope.toDate = lastDay;
+
+      // Req all graphs and stats
+      updateAllGraphsAndStats(firstDay, lastDay);
+    }
 
   } else {
 
@@ -81,9 +101,6 @@ myApp.controller("monthChartCtrl", ['$scope', '$rootScope', '$http', '$routePara
 
     // Request Line Graph
     multiDayGraphService.update($http, fromDate, toDate, statService);
-
-    // Request W/L stats from server
-    statService.getWinLoss($http, fromDate, toDate, username, server);
 
   }
 
@@ -105,12 +122,12 @@ myApp.controller("monthChartCtrl", ['$scope', '$rootScope', '$http', '$routePara
         console.log(response);
         if(response === "ReGraphPlz"){
           
-          var toDate = new Date();
-          var fromDate = new Date();
+          var d = new Date();
 
-          fromDate.setDate(toDate.getDate() - 6);
+          var firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
+          var lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0);
 
-          updateAllGraphsAndStats(fromDate, toDate);
+          updateAllGraphsAndStats(firstDay, lastDay);
         }
     }).
     error(function(response){
