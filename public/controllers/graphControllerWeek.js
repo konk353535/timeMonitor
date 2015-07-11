@@ -1,6 +1,6 @@
 
 // Access Controller for graph page
-myApp.controller("weekChartCtrl", ['$scope', '$rootScope', '$http', '$routeParams', 'utilityService' ,'statService', 'multiDayGraphService', 'championPieGraphService', function ($normalScope, $rootScope, $http, $routeParams, utilityService, statService, multiDayGraphService, championPieGraphService) {
+myApp.controller("weekChartCtrl", ['$location', '$scope', '$rootScope', '$http', '$routeParams', 'utilityService' ,'statService', 'multiDayGraphService', 'championPieGraphService', function ($location, $normalScope, $rootScope, $http, $routeParams, utilityService, statService, multiDayGraphService, championPieGraphService) {
 
   // Only scope we want is the rootScope
 	$scope = $rootScope;
@@ -36,6 +36,13 @@ myApp.controller("weekChartCtrl", ['$scope', '$rootScope', '$http', '$routeParam
       $scope.toDate = toDate;
 
       updateAllGraphsAndStats(fromDate, toDate);
+
+      // Need to change the :date param in url to new date
+      var dispDate = fromDate.getFullYear() + "-" +
+                     (fromDate.getMonth()+1) + "-" + 
+                     fromDate.getDate(); 
+
+      $location.path("user/" + $scope.username + "/" + $scope.server + "/week/" + dispDate);
   }
 
   // If we have pulled users name and server from url
@@ -52,7 +59,7 @@ myApp.controller("weekChartCtrl", ['$scope', '$rootScope', '$http', '$routeParam
     $rootScope.serverFormatted = utilityService.serverFormat($rootScope.server);
 
     // Generate custom dates based upon timePeriod given
-    if($routeParams.timePeriod == "ThisWeek"){
+    if($routeParams.date == "ThisWeek"){
 
       var toDate = new Date();
       var fromDate = new Date();
@@ -61,7 +68,19 @@ myApp.controller("weekChartCtrl", ['$scope', '$rootScope', '$http', '$routeParam
 
       // Req all graphs and stats
       updateAllGraphsAndStats(fromDate, toDate);
-    } 
+    } else {
+
+      var toDate = new Date($routeParams.date);
+      var fromDate = new Date($routeParams.date);
+
+      toDate.setDate(toDate.getDate() + 6);
+
+      $scope.fromDate = fromDate;
+      $scope.toDate = toDate;
+
+      // Req all graphs and stats
+      updateAllGraphsAndStats(fromDate, toDate);
+    }
 
   } else {
 
@@ -79,10 +98,6 @@ myApp.controller("weekChartCtrl", ['$scope', '$rootScope', '$http', '$routeParam
 
     // Request Line Graph
     multiDayGraphService.update($http, fromDate, toDate, statService);
-
-    // Request W/L stats from server
-    statService.getWinLoss($http, fromDate, toDate, username, server);
-
   }
 
   /**
