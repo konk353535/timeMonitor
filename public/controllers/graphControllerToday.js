@@ -61,6 +61,15 @@ myApp.controller("todayChartCtrl", ['$location', '$scope', '$rootScope', '$http'
 
     // Generate custom dates based upon timePeriod given
     if($routeParams.date == "Today"){
+      
+      // Change headings
+      $scope.fromDate = undefined;
+      $scope.toDate = undefined;
+
+      if($normalScope.demo){
+        $normalScope.demo.dtFrom = "Choose Date";
+      }
+
       var fromDate = new Date();
       var toDate = new Date();
 
