@@ -61,6 +61,14 @@ myApp.controller("weekChartCtrl", ['$location', '$scope', '$rootScope', '$http',
     // Generate custom dates based upon timePeriod given
     if($routeParams.date == "ThisWeek"){
 
+      // Change headings 
+      $scope.fromDate = undefined;
+      $scope.toDate = undefined;
+
+      if($normalScope.demo){
+        $normalScope.demo.dtFrom = "Choose Date";
+      }
+
       var toDate = new Date();
       var fromDate = new Date();
 
@@ -68,6 +76,8 @@ myApp.controller("weekChartCtrl", ['$location', '$scope', '$rootScope', '$http',
 
       // Req all graphs and stats
       updateAllGraphsAndStats(fromDate, toDate);
+
+
     } else {
 
       var toDate = new Date($routeParams.date);
