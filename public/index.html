@@ -21,8 +21,23 @@
 
   <title>Zilean</title>
   <style>
+  html {
+    position: relative;
+    min-height: 100%;
+  }
   .body {
     font-family: 'Open Sans', sans-serif;
+    margin-bottom: 40px;
+  }
+  .footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    /* Set the fixed height of the footer here */
+    height: 40px;
+    background-color: #2e2e2e;
+    color: #FFFFFF;
+    padding-top: 10px;
   }
   .btn-zil-blu {
     background-color: #325b87;
@@ -54,6 +69,7 @@
   .form-group {
     margin-bottom: 10px;
   }
+
   </style>
 </head>
 <body style="background-color: #3b3b3b; height: 100%;" ng-controller="AppCtrl">
@@ -75,6 +91,8 @@
       <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
         <ul class="nav navbar-nav">
           <li><a href="#">Home</a></li>
+          <li><a href="/feedback">Feedback</a></li>
+          <li><a href="#">Donate</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <form class="navbar-form navbar-left" role="search">
@@ -88,7 +106,7 @@
                 <option value="euw">EUW</option>
               </select>
             </div>
-            <a href="user/{{player.name}}/{{player.server}}/day/Today" class="btn btn-default" role="button">
+            <a href="user/{{player.name}}/{{player.server}}/month/ThisMonth" class="btn btn-default" role="button">
               Track
             </a>
           </form>
@@ -107,7 +125,7 @@
     <div class="row">
       <div class="col-md-6 col-md-offset-3">
 
-        <p class="explanation">Zilean tracks every minute that you play, Look back at how much time you've played today, the last 7 days or as far back as Zilean has been tracking you.</p>
+        <p class="explanation">Track every minute that you play, see detailed graphs and pinpoint your play time.</p>
 
         <div class="form-group input-group-lg">
 
@@ -143,6 +161,16 @@
       </div>
     </div>
   </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p style="text-align:center">
+        Graphics by - <a href="http://cherrycake4.deviantart.com/">Cherrycake4</a>
+      </p>
+    </div>
+  </footer>
+  <!-- End Footer -->
 
 <!-- Angular base js -->
 <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0-rc.0/angular.min.js"></script>
