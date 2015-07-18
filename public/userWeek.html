@@ -48,6 +48,34 @@
       margin-bottom: 10px;
     }
   </style>
+
+<!-- Jquery for highcharts -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+<!-- Angular base js -->
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0-rc.0/angular.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0-rc.0/angular-route.js"></script>
+
+<!-- Charting requirments highcharts -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/highcharts/4.1.5/highcharts.js">
+</script>
+<script src="/themes/gray.js"></script>
+<script src="highcharts-ng.js"></script>
+
+<script src="ui-bootstrap-tpls-0.12.1.min.js"></script>
+
+<!-- Charting requirments Chart Js-->
+<script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
+<script src="angular-chart.js"></script>
+
+<!-- Controllers -->
+<script src="controllers/graphAppWeek.js"></script>
+<script src="controllers/services/multiDayGraphService.js"></script>
+<script src="controllers/services/championPieGraphService.js"></script>
+<script src="controllers/services/statsService.js"></script>
+<script src="controllers/graphControllerWeek.js"></script>
+
 </head>
 <body style="background-color: #ededed; height: 100%;" 
       ng-controller="weekChartCtrl" id="chartApp">
@@ -82,8 +110,8 @@
                 <option value="euw">EUW</option>
               </select>
             </div>
-            <a href="user/{{player.name}}/{{player.server}}">
-              <button type="submit" class="btn btn-default">Track</button>
+            <a href="user/{{player.name}}/{{player.server}}/week/ThisWeek" class="btn btn-default" role="button">
+              Track
             </a>
           </form>
         </ul>
@@ -107,6 +135,21 @@
      </span>
     </div>
 
+    <br />
+    <ol class="breadcrumb">
+      <li>
+        <a href="user/{{username}}/{{server}}/day/Today" target="_self">
+          Day
+        </a>
+      </li>
+      <li class="active">Week</li>
+      <li>
+        <a href="user/{{username}}/{{server}}/month/ThisMonth" target="_self">
+          Month
+        </a>
+      </li>
+    </ol>
+
     <div ng-view></div>
 
     <div class="row" style="text-align:center">
@@ -118,6 +161,10 @@
         </h2>
       </div>
       <div class="col-md-6">
+        <div class="input-group intput-group-lg">
+        <span class="input-group-addon" id="sizing-addon1">
+          <span class="glyphicon glyphicon-calendar"></span>
+        </span>
         <input type="text" 
             class="form-control date inline" 
             id="dateFrom" 
@@ -129,6 +176,7 @@
             is-open="demo.dateFrom" 
             ng-required="true" 
             close-text="Close" >
+        </div>
       </div>
     </div>
     <div class="row" >
@@ -151,10 +199,10 @@
           Total : {{stats.totalMinutes / 60 | number: 2}} hr
         </h3>
         <h3>
-          Best Champ : {{bestChampionName}} 
+          Highest Win Rate : {{bestChampionName}} 
           <small>({{bestChampionWinRate}}%)</small>
         </h3>
-        <h3>Fav Champ : {{favChampName}}
+        <h3>Most Played : {{favChampName}}
           <small>({{favChampNumGames}} games)</small>
         </h3>
         <h3>
@@ -175,34 +223,6 @@
       </div>
     </div>
     <br /><br />
-
-
-<!-- Jquery for highcharts -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-
-<!-- Angular base js -->
-<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0-rc.0/angular.min.js"></script>
-<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0-rc.0/angular-route.js"></script>
-
-<!-- Charting requirments highcharts -->
-<script src="//cdnjs.cloudflare.com/ajax/libs/highcharts/4.1.5/highcharts.js">
-</script>
-<script src="/themes/gray.js"></script>
-<script src="highcharts-ng.js"></script>
-
-<script src="ui-bootstrap-tpls-0.12.1.min.js"></script>
-
-<!-- Charting requirments Chart Js-->
-<script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
-<script src="angular-chart.js"></script>
-
-<!-- Controllers -->
-<script src="controllers/graphAppWeek.js"></script>
-<script src="controllers/services/multiDayGraphService.js"></script>
-<script src="controllers/services/championPieGraphService.js"></script>
-<script src="controllers/services/statsService.js"></script>
-<script src="controllers/graphControllerWeek.js"></script>
 
 </body>
 </html>
