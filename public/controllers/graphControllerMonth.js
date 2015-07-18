@@ -64,6 +64,14 @@ myApp.controller("monthChartCtrl", ['$location', '$scope', '$rootScope', '$http'
     // Generate custom dates based upon timePeriod given
     if($routeParams.date == "ThisMonth"){
 
+      // Change headings 
+      $scope.fromDate = undefined;
+      $scope.toDate = undefined;
+
+      if($normalScope.demo){
+        $normalScope.demo.dtFrom = "Choose Date";
+      }
+
       var d = new Date();
       var firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
       var lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0);
