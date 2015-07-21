@@ -20,7 +20,7 @@ var getStats = function getStat(userName, statOptions, responder){
         if (err) return console.error(err);
         if(userData !== null){
             // Check user has some data
-            if(userData.lastMatchId > 25){
+            if(userData.lastMatchId[0] > 25){
 
                 // User Found
                 if(statType == "recordDay"){
@@ -35,7 +35,6 @@ var getStats = function getStat(userName, statOptions, responder){
             }
         } else{
             // Invalid summonerName given
-            console.log("Error: Specified user could not be found");
             responder.status(404);
             responder.send("Error: Specified user could not be found");
         }
@@ -44,7 +43,6 @@ var getStats = function getStat(userName, statOptions, responder){
 };
 
 function recordDay(err, userData, responder){
-    console.log("RecordDay stat request");
 
     gameModel.aggregate([
         // Only use games from this user
@@ -61,7 +59,6 @@ function recordDay(err, userData, responder){
         { $limit: 1}],
     function (err, res){
         if(err);
-        console.log(res);
         var recordGame = res[0];
 
         var recordMinutes = Math.round(recordGame.totalSeconds / 60);
@@ -91,7 +88,6 @@ function averageDay(err, userData, responder){
     Calculate average time spent /day by getting totalTimePlayed / Diff(earliestGameTracked, latestGameTracked)
     Welcome to callback HELL !!!! ><> -|- <>< ||||-- ><> ><> ><> --|||| <>< <>< <><
     */
-    console.log("------------- AverageDay stat request ---------------");
 
     // Get totalGameDuration
     gameModel.aggregate([
@@ -102,7 +98,6 @@ function averageDay(err, userData, responder){
     }],
     function (err, res){
         if(err){console.log(err);}
-        console.log(res);
 
         // Store totalTrackedTime
         var totalGameStats = res[0];
@@ -116,10 +111,6 @@ function averageDay(err, userData, responder){
             // Get Earliest Game
             gameModel.findOne({userId : userData._id}).sort({dateTime: 1}).exec(function(err,res){
                 if(err){console.log(err);}
-
-                console.log("Earliest Game - " + res.dateTime);
-                console.log("Latest Game - " + latestGame);
-                console.log("totalTrackedMinutes - " + totalTrackedMinutes);
 
                 averageDayOutputter(res.dateTime, latestGame, totalTrackedMinutes, responder);
             })

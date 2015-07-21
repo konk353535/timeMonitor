@@ -59,8 +59,6 @@ var getGraph = function getGraph(userName, serverName, graphOptions,
   */
 function getUserThenGraph(userName, serverName, graphOptions, graphFunctionName, responder) {
 
-  console.log("Starting get user then graph");
-
   // Query mongodb for user with name and server
   userModel.findOne({"summonerName":userName, "server":serverName}).exec(function (err, userData) {
 
@@ -71,7 +69,7 @@ function getUserThenGraph(userName, serverName, graphOptions, graphFunctionName,
 
       // Check if user has some data for graphing (25 is default lastMatchID)
       // When updating a users game lastMatchId is updated to a much higher number
-      if(userData.lastMatchId > 25){
+      if(userData.lastMatchId[0] > 25){
         graphFunctionName(null, userData, graphOptions, responder);
       }
       else {
@@ -81,7 +79,7 @@ function getUserThenGraph(userName, serverName, graphOptions, graphFunctionName,
     } else {
 
       // Invalid summonerName given
-      responder.status(404).send("Error: (graphManager get user) Specified user could not be found");
+      responder.status(404).send("Adding new user, please wait");
     }
 
   });
@@ -308,21 +306,11 @@ function analyzeGamesDaysGraph(err, gameData, graphOptions, userData, startDate,
 **/
 function todayGraph(err, userData, graphOptions, responder){
 
-  console.log("Private give me " + userData._id + " games today!");
-
   // Get first minute of today in client's timezone
   var todayFirstMin = graphOptions.fromDate;
-  todayFirstMin = moment(todayFirstMin).seconds(00);
-  todayFirstMin = moment(todayFirstMin).minutes(00);
-  todayFirstMin = moment(todayFirstMin).hours(00);
-  todayFirstMin = moment(todayFirstMin).format();
 
   // Get last minute of today in client's timezone
   var todayLastMin = graphOptions.toDate;
-  todayLastMin = moment(todayLastMin).seconds(59);
-  todayLastMin = moment(todayLastMin).minutes(59);
-  todayLastMin = moment(todayLastMin).hours(23);
-  todayLastMin = moment(todayLastMin).format();
 
   // Query Mongo DB for all games between specified dates
   gameModel.find(

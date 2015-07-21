@@ -19,7 +19,7 @@ var updateNumber = 0;
 var updateUser = function getUserToUpdate(){
 
 	// Only update if last update is completed
-	if(updateNumber == 0){
+	if(updateNumber <= 0){
 		
 		// Grab Users to update
 		userModel.find({updated: false, lastMatchId:{$ne:25}})
@@ -88,7 +88,7 @@ function scanUserGames(user, resToClient){
 					updateNumber -= 1;
 					updateUserReset(user._id);
 				} else {
-					console.log("Invalid Summoner Name or Server");
+					console.log("Err: Invalid Summoner Name or Server!");
 
 					// Flag user for not being legit
 					updateNumber -= 1;
@@ -103,21 +103,16 @@ function updateUserReset(userId){
 
 		if(err) return handleError(err);
 
-		console.log("User Fully Updated");
-		console.log("Finished - " + new Date());
+		if(updateNumber == 0){
+			console.log("Finished - " + new Date());
+		}
 	});
 }
 
 function analyzeGames(user, gamesData, resToClient){
 	var lMatchId = user.lastMatchId;
 	var newMatchId = [];
-	var isOldId = false;
 
-	if(lMatchId.constructor !== Array){
-		// This is because old accounts will have numerical lMatchId values
-		lMatchId = [lMatchId];
-		isOldId = true;
-	}
 
 	// So we can update the last match id of the player later
 	var currentMaxMatchId = 0;
@@ -128,8 +123,6 @@ function analyzeGames(user, gamesData, resToClient){
 
 		// To make sure we're only using new games
 		if(game.gameId > lMatchId[0] && lMatchId.indexOf(game.gameId) == -1){
-
-			console.log("Game ID " + game.gameId + " lMatchId " + lMatchId);
 
 			// console.log(game.gameId + " > " + lMatchId);
 			var stats = game.stats;
@@ -154,10 +147,8 @@ function analyzeGames(user, gamesData, resToClient){
 		}
 	});
 
-	console.log("New matches - " + newMatchId);
-
 	// Update last match ids
-	if(newMatchId.length > 0 || isOldId){
+	if(newMatchId.length > 0){
 		
 		var numOldGames = lMatchId.length;
 		var numNewGames = newMatchId.length;
@@ -175,9 +166,9 @@ function analyzeGames(user, gamesData, resToClient){
 			return a-b;
 		});		
 
+
 		userModel.update({"_id":  user._id}, { lastMatchId: lMatchId}, function(err, newInfo){
 			if(err) return handleError(err);
-			console.log("maxMatchId Updated");
 		});
 
 	}
@@ -219,8 +210,6 @@ function addGame(user, newMatchId, newDuration, newChampion, newPosition, dateCr
 
 	newGame.save(function (err, newGame) {
 		if (err) return console.error(err);
-
-		console.log("New Game Added");
 	});
 	user = null;
 }
