@@ -49,11 +49,13 @@ myApp.controller("todayChartCtrl", ['$location', '$scope', '$rootScope', '$http'
   // If we have pulled users name and server from url
 	if($routeParams.username){
 
+    $rootScope.player.server = $routeParams.server;
+
     addUser();
 
 		$rootScope.username = $routeParams.username;
     $rootScope.server = $routeParams.server;
-
+    
     $rootScope.timePeriod = $routeParams.timePeriod;
 
     // Output full server name (oce = Oceanic ect)
