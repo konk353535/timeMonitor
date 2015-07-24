@@ -9,7 +9,10 @@
   <!-- Because the url has user/SummName/ServerName, html thinks those are folders, we tell em no -->
   <base href="/">
   <link rel="stylesheet" href="angular-chart.css">
-
+  <!-- Jquery JS -->
+  <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
   <!-- Latest compiled and minified CSS -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
   <!-- Optional theme -->
@@ -20,21 +23,26 @@
   <link rel="icon" type="image/png" href="img/Cog.png">
 
   <style>
-    html {
+    html, body {
       height: 100%;
     }
-    .body {
+    #wrap {
+      min-height: 100%;
+    }
+    #main {
+      overflow: auto;
+      padding-bottom: 100px;
+    }
+    body {
       font-family: 'Open Sans', sans-serif;
-      margin-bottom: 40px;
     }
     .footer {
       width: 100%;
       /* Set the fixed height of the footer here */
-      height: 40px;
       background-color: #2e2e2e;
       color: #FFFFFF;
       padding-top: 10px;
-      margin-top: 40px;
+      margin-top: -40px;
     }
     h1,h2 {
       margin-bottom: 20px;
@@ -65,17 +73,6 @@
     }
   </style>
 
-<script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-  ga('create', 'UA-65285932-1', 'auto');
-  ga('send', 'pageview');
-
-</script>
-
 <!-- Jquery for highcharts -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 
@@ -102,10 +99,12 @@
 <script src="controllers/services/championPieGraphService.js"></script>
 <script src="controllers/services/statsService.js"></script>
 <script src="controllers/graphControllerWeek.js"></script>
-
 </head>
 <body style="background-color: #ededed; height: 100%;" 
       ng-controller="weekChartCtrl" id="chartApp">
+
+  <div id="wrap">
+  <div id="main">
   <!-- Nav bar -->
   <nav class="navbar navbar-default navbar-zil navbar-inverse">
     <div class="container">
@@ -123,8 +122,6 @@
       <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
         <ul class="nav navbar-nav">
           <li><a href="/" target="_self">Home</a></li>
-          <li><a href="/feedback">Feedback</a></li>
-          <li><a href="#">Donate</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <form class="navbar-form navbar-left" role="search">
@@ -134,11 +131,11 @@
               <select class="form-control" ng-model="player.server">
                 <option value="oce" selected>OCE</option>
                 <option value="na">NA</option>
-                <option value="eue">EUE</option>
+                <option value="eune">EUNE</option>
                 <option value="euw">EUW</option>
               </select>
             </div>
-            <a href="user/{{player.name}}/{{player.server}}/week/ThisWeek" class="btn btn-default" role="button">
+            <a href="user/{{player.name}}/{{player.server}}/week/{{(fromDate | date:'yyyy-M-dd') || 'ThisWeek'}}" class="btn btn-default" role="button">
               Track
             </a>
           </form>
@@ -251,12 +248,15 @@
       </div>
     </div>
   </div>
-
+  </div>
+  </div>
   <!-- Footer -->
   <footer class="footer">
     <div class="container">
       <p style="text-align:center">
-        Graphics by - <a href="http://cherrycake4.deviantart.com/">Cherrycake4</a>
+            Graphics by - 
+            <a href="http://cherrycake4.deviantart.com/">Cherrycake4</a> &nbsp;|&nbsp; 
+          Feedback - Zileangg@gmail.com &nbsp;|&nbsp; Support Us - <a href="https://www.digitalocean.com/?refcode=a85ed5dc86a7">Digital Ocean</a> 
       </p>
     </div>
   </footer>
