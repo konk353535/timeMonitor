@@ -30,12 +30,24 @@ myApp.factory('utilityService', function(){
         return("Oceanic");
       } else if(server == "na"){
         return("North America");
-      } else if(server == "eue"){
-        return("Europe East");
+      } else if(server == "eune"){
+        return("Europe Nordic & East");
       } else if(server == "euw"){
         return("Europe West");
+      } else if(server == "br"){
+        return("Brazil");
+      } else if(server == "ru"){
+        return("Russia");
+      } else if(server == "kr"){
+        return("Korea");
+      } else if(server == "lan"){
+        return("Latin America North");
+      } else if(server == "las"){
+        return("Latin America South");
+      } else if(server == "tr"){
+        return("Turkey");
       } else {
-      	return("Invalid Server");
+        return("Invalid Server");
       }
     }
   }
