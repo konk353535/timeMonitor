@@ -16,6 +16,11 @@
 var userModel = require("./models/userModel.js").userModel;
 var gameModel = require("./models/gameModel.js").gameModel;
 
+// Config file for apiKey ect
+var config = require('./config/config');
+
+// Request for API Calls
+var request = require('request');
 
 // Check given user isn't updated
 var backLogUser = function verifyUser(userId){
@@ -41,9 +46,65 @@ function getEarliestGame(user){
 
 		if(err) console.log(err);
 
-		console.log(gameData);
-		console.log(user);
+		var oldestRecordedGame = gameData.matchId;
+		var summonerId = user.summonerId;
+		var server = user.server;
+
+		var indexFrom = 2100;
+		var indexTo = 2115;
+
+		var errorCount = 0;
+
+		getOldGames(oldestRecordedGame, summonerId, server, indexFrom, 
+			indexTo, errorCount)
 	});
+}
+
+function getOldGames(oldestRecordedGame, summonerId, server, indexFrom, indexTo, errorCount){
+
+
+	// Iterate until we get 200 res + empty response
+	var matchHistoryUrl = 'https://' + server
+	+ '.api.pvp.net/api/lol/' + server 
+	+ '/v2.2/matchhistory/' + summonerId 
+	+ '?beginIndex=' + indexFrom 
+	+ '&endIndex=' + indexTo
+	+ '&api_key=' + config.apikey;
+
+	console.log(matchHistoryUrl);
+
+	// Request up to 15 games
+	request( matchHistoryUrl,
+	function (error, response, body) {
+		if(error) console.log(error)
+
+		if (!error && response.statusCode == 200) {
+
+			var gameData = JSON.parse(response.body);
+			var numberOfKeys = Object.keys(gameData).length;
+
+			indexFrom += 15;
+			indexTo += 15;
+
+			if(numberOfKeys == 0){
+				// Scan complete
+				console.log("indexFrom =" + indexFrom + "err =" + errorCount);
+			} else {
+				// Keep scanning
+				getOldGames(oldestRecordedGame, summonerId, server, indexFrom, indexTo, errorCount);
+			}
+
+		} else {
+			// Inc error count by one
+
+			// Has there been too many errors to keep going?
+			
+			// Rerequest given url
+			getOldGames(oldestRecordedGame, summonerId, server, indexFrom, indexTo, errorCount+1);
+		}
+	});
+	
+
 }
 
 
