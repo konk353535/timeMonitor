@@ -20,19 +20,31 @@ var gameModel = require("./models/gameModel.js").gameModel;
 // Check given user isn't updated
 var backLogUser = function verifyUser(userId){
 
+  userModel.findOne({"_id":userId}).exec(function (err, user) {
 
+  	if (err) console.log("Error in backLogManager - " + err);
+  	
+  	if(user && user.lastMatchId[0] !== 25 && user.backLogged === false){
+  		// Send valid user to get earliestRecordedMatchId
+  		getEarliestGame(user);
+  	}
 
-
-
-
+  });
 }
 
+function getEarliestGame(user){
 
+	gameModel.find({userId : user._id})
+			 .sort({matchId : 1})
+			 .limit(1)
+			 .exec(function(err,gameData){
 
+		if(err) console.log(err);
 
-
-
-
+		console.log(gameData);
+		console.log(user);
+	});
+}
 
 
 
