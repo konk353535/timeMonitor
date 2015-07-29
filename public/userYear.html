@@ -1,0 +1,275 @@
+<!DOCTYPE>
+<html ng-app="myCharts">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <!-- Because the url has user/SummName/ServerName, html thinks those are folders, we tell em no -->
+  <base href="/">
+  <link rel="stylesheet" href="angular-chart.css">
+  
+  <!-- Jquery JS -->
+  <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+
+  <title>Zilean</title>
+
+  <link rel="icon" type="image/png" href="img/Cog.png">
+
+  <style>
+    html, body {
+      height: 100%;
+    }
+    #wrap {
+      min-height: 100%;
+    }
+    #main {
+      overflow: auto;
+      padding-bottom: 100px;
+    }
+    body {
+      font-family: 'Open Sans', sans-serif;
+    }
+    .footer {
+      width: 100%;
+      /* Set the fixed height of the footer here */
+      background-color: #2e2e2e;
+      color: #FFFFFF;
+      padding-top: 10px;
+      margin-top: -40px;
+    }
+    h1,h2 {
+      margin-bottom: 20px;
+    }
+    h3 {
+      margin-top : 40px;
+    }
+    h3,h4 {
+      color: #94e2e4;
+      font-family: 'Open Sans', sans-serif;
+    }
+    h1,h2 {
+      color: #2e2e2e;
+      font-family: 'Open Sans', sans-serif;
+    }
+    .well {
+      /*For some reason there is a background image for this..? weird*/
+      background-image: none;
+      background-color: #2e2e2e;
+      border: 1px solid rgb(69,114,167); 
+      color: #FFFFFF;
+    }
+    .inline {
+      display: inline;
+    }
+    .bot-10 {
+      margin-bottom: 10px;
+    }
+  </style>
+
+<!-- Jquery for highcharts -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+<!-- Angular base js -->
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0-rc.0/angular.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0-rc.0/angular-route.js"></script>
+
+<!-- Charting requirments highcharts -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/highcharts/4.1.5/highcharts.js">
+</script>
+<script src="/themes/gray.js"></script>
+<script src="highcharts-ng.js"></script>
+
+<script src="ui-bootstrap-tpls-0.12.1.min.js"></script>
+
+<!-- Charting requirments Chart Js-->
+<script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
+<script src="http://code.highcharts.com/modules/drilldown.js"></script>
+<script src="angular-chart.js"></script>
+
+<!-- Controllers -->
+<script src="controllers/graphAppYear.js"></script>
+<script src="controllers/services/yearGraphService.js"></script>
+<script src="controllers/services/championPieGraphService.js"></script>
+<script src="controllers/services/statsService.js"></script>
+<script src="controllers/graphControllerYear.js"></script>
+</head>
+<body style="background-color: #ededed; height: 100%;" 
+      ng-controller="yearChartCtrl" id="chartApp">
+
+  <div id="wrap">
+  <div id="main">
+  <!-- Nav bar -->
+  <nav class="navbar navbar-default navbar-zil navbar-inverse">
+    <div class="container">
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+      </div>
+
+      <!-- Collect the nav links, forms, and other content for toggling -->
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <ul class="nav navbar-nav">
+          <li><a href="/" target="_self">Home</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <form class="navbar-form navbar-left" role="search">
+            <div class="form-group">
+              <input type="text" class="form-control" 
+                placeholder="Summoner Name" ng-model="player.name">
+              <select class="form-control" ng-model="player.server">
+                <option value="na">NA</option>
+                <option value="oce">OCE</option>
+                <option value="eune">EUNE</option>
+                <option value="euw">EUW</option>
+                <option value="br">BR</option>
+                <option value="kr">KR</option>
+                <option value="lan">LAN</option>
+                <option value="las">las</option>
+                <option value="ru">RU</option>
+                <option value="tr">TR</option>
+              </select>
+            </div>
+            <a href="user/{{player.name}}/{{player.server}}/month/{{(fromDate | date:'yyyy-M-dd') || 'ThisMonth'}}" class="btn btn-default" role="button">
+              Track
+            </a>
+          </form>
+        </ul>
+      </div><!-- /.navbar-collapse -->
+    </div><!-- /.container -->
+  </nav>
+  <!-- End of navbar -->
+
+  <div class="container">
+    <div ng-repeat="errorMessage in errors" class="alert alert-danger">
+      {{errorMessage}}
+    </div>
+  </div>
+
+  <div class="container">
+
+    <div style="display:table">
+      <img src="img/zilean-graphic.png" class="img-responsive" 
+      style="height: 100px; width: auto; vertical-align:middle; display:inline-block;">
+     <span style="color: #cd6066; display:table-cell; font-size:48px; vertical-align: middle">{{username}} | {{serverFormatted}}
+     </span>
+    </div>
+
+    <br />
+    <ol class="breadcrumb">
+      <li>
+        <a href="user/{{username}}/{{server}}/day/Today" target="_self">
+          Day
+        </a>
+      </li>
+      <li>
+        <a href="user/{{username}}/{{server}}/week/ThisWeek" target="_self">
+          Week
+        </a>
+      </li>
+      <li class="active">Month</li>
+    </ol>
+
+    <div ng-view></div>
+
+    <div class="row" style="text-align:center">
+      <div class="col-md-6">
+        <h2 style="margin-top: 0px; margin-bottom: 10px;">
+          {{(fromDate | date:'MMM d') || "This Month"}}
+          {{(fromDate !== undefined ? "-" : "")}}
+          {{(toDate | date:'MMM d')}}
+        </h2>
+      </div>
+      <div class="col-md-6">
+        <div class="input-group intput-group-lg">
+        <span class="input-group-addon" id="sizing-addon1">
+          <span class="glyphicon glyphicon-calendar"></span>
+        </span>
+        <input type="text" 
+            class="form-control date inline" 
+            id="dateFrom" 
+            placeholder="Choose Date" 
+            ng-click="demo.dateFrom=true"
+            ng-change="dateChanged()"
+            datepicker-popup="{{demo.format}}" 
+            ng-model="demo.dtFrom" 
+            is-open="demo.dateFrom" 
+            ng-required="true" 
+            close-text="Close" >
+        </div>
+      </div>
+    </div>
+    <div class="row" >
+      <div class="col-md-12" style="text-align:center">
+        <highchart id="chart3" config="yearChart.chartConfig" class="span10">
+        </highchart>
+      </div>
+    </div>
+
+  </div>
+
+
+  <div class="container">
+    <div class="row" >
+      <div class="col-md-6" 
+        style="text-align:center;">
+        <h2>Stats</h2>
+        <div style="background-color: #2e2e2e; padding-top: 30px; height: 398px; padding-bottom: 30px; border: 1px solid rgb(69, 114, 167)">
+        <h3>
+          Total : {{stats.totalMinutes / 60 | number: 2}} hr
+        </h3>
+        <h3>
+          Highest Win Rate : {{bestChampionName}} 
+          <small>({{bestChampionWinRate}}%)</small>
+        </h3>
+        <h3>Most Played : {{favChampName}}
+          <small>({{favChampNumGames}} games)</small>
+        </h3>
+        <h3>
+          Win/Loss :
+          <div style="color:green; display: inline">{{stats.wins}}</div> 
+          / 
+          <div style="color:red; display: inline">{{stats.losses}}</div>
+          <small>
+            ({{stats.wins/(stats.losses+stats.wins) * 100 
+            | number: 2}}%)
+          </small>
+        </h3>
+        </div>
+      </div>
+      <div class="col-md-6" style="text-align:center">
+        <h2>Champions</h2>
+        <highchart id="chart2" config="champChart.chartConfig" class="span10"></highchart>
+      </div>
+    </div>
+  </div>
+  </div>
+  </div>
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p style="text-align:center">
+            Graphics by - 
+            <a href="http://cherrycake4.deviantart.com/">Cherrycake4</a> &nbsp;|&nbsp; 
+          Feedback - Zileangg@gmail.com &nbsp;|&nbsp; Support Us - <a href="https://www.digitalocean.com/?refcode=a85ed5dc86a7">Digital Ocean</a> 
+      </p>
+    </div>
+  </footer>
+  <!-- End Footer -->
+
+</body>
+</html>
