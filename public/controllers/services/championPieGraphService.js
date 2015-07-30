@@ -144,6 +144,77 @@ myApp.factory('championPieGraphService', function(){
       error(function(response){
         $scope.errors.push(response);
       });
-  	}
+  	},
+
+    updatePositionGraph : function($http, fromDate, toDate){
+      // Get current date for client
+      //var n = new Date();
+
+      var fromDate = new Date(fromDate.getFullYear(), 
+                              fromDate.getMonth(), 
+                              fromDate.getDate());
+
+      var toDate = new Date(toDate.getFullYear(), 
+                            toDate.getMonth(), 
+                            toDate.getDate());
+
+      
+      // Store users timezone
+      var offset = new Date().getTimezoneOffset();
+
+      // Request server for mutli day graph data
+      $http.post('/graph', {
+
+        // Pass users timezone to server
+        userOffSet: offset,
+
+        // Tell server what graphType we want
+        graphType: "positionPieGraph",
+
+        // Store dates for server to use
+        startDate: fromDate,
+        endDate: toDate,
+
+        // Users name and server
+        name: $scope.username,
+        server: $scope.server
+
+      }).success(function(response){
+
+      
+        // Store server response
+        graphInfo = response;
+
+        console.log(graphInfo);
+
+        $scope.champChart.chartConfig.series = [{
+          
+          // Size and innersize to make it a doughnut (cut out the middle)
+          size: '60%',
+          innerSize: '50%',
+          
+          // Type of chart is pie
+          type: 'pie',
+
+          // Tooltip is Games: Value
+          name: 'Games',
+
+          // Load in data from server response
+          data: graphInfo
+
+        }];
+        
+        // It's Loaded okay
+        $scope.champChart.chartConfig.loading = false;
+
+        
+      }).
+      error(function(response){
+        $scope.errors.push(response);
+      });
+    }
+
+
+
   }
 });
