@@ -12,8 +12,19 @@ myApp.controller("yearChartCtrl", ['$location', '$scope', '$rootScope', '$http',
 
   // Object so all our stats live in one place
 	$scope.stats = {};
-  
 
+  $scope.current = {};
+
+  // When our year dropdown is changed
+  $normalScope.dateChanged = function(){
+    var year = $normalScope.picker.year;
+    
+    $scope.current.year = year;
+
+    // Changing the location path causes route params to be recalled
+    
+    $location.path("user/" + $scope.username + "/" + $scope.server + "/year/" + year);
+  }
 
   // If we have pulled users name and server from url
 	if($routeParams.username){
@@ -30,7 +41,17 @@ myApp.controller("yearChartCtrl", ['$location', '$scope', '$rootScope', '$http',
     // Output full server name (oce = Oceanic ect)
     $rootScope.serverFormatted = utilityService.serverFormat($rootScope.server);
 
-    updateAllGraphsAndStats(2015);
+    if($routeParams.date == "ThisYear"){
+      // Get current year
+      var d = new Date();
+      var year = d.getFullYear();
+    } else {
+      var year = $routeParams.date;
+    }
+    
+    $scope.current.year = year;
+    
+    updateAllGraphsAndStats(year);
 
   } else {
 
@@ -40,6 +61,8 @@ myApp.controller("yearChartCtrl", ['$location', '$scope', '$rootScope', '$http',
   }
 
   function updateAllGraphsAndStats(year){
+
+    console.log(year);
 
     var username = $rootScope.username;
     var server = $rootScope.server;
@@ -68,10 +91,7 @@ myApp.controller("yearChartCtrl", ['$location', '$scope', '$rootScope', '$http',
           
           var d = new Date();
 
-          var firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
-          var lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0);
-
-          updateAllGraphsAndStats(firstDay, lastDay);
+          updateAllGraphsAndStats(2007);
         }
     }).
     error(function(response){
