@@ -1,4 +1,6 @@
 
+var util = require('util');
+
 // Models to interface with Mongo DataBase
 var userModel = require("./models/userModel.js").userModel;
 var gameModel = require("./models/gameModel.js").gameModel;
@@ -40,6 +42,10 @@ var getGraph = function getGraph(userName, serverName, graphOptions,
     getUserThenGraph(userName, serverName, graphOptions, daysGraph, responder);
   } else if (graphOptions.graphType == "allGraph") {
     getUserThenGraph(userName, serverName, graphOptions, allGraph, responder);
+  } else if (graphOptions.graphType == "yearGraph") {
+    getUserThenGraph(userName, serverName, graphOptions, yearGraph, responder);
+  } else if (graphOptions.graphType == "positionPieGraph") {
+    getUserThenGraph(userName, serverName, graphOptions, positionPieGraph, responder);
   } else {
     responder.status(404).send(
       "We have an error m8 that graphType doesn't exist");
@@ -71,10 +77,9 @@ function getUserThenGraph(userName, serverName, graphOptions, graphFunctionName,
       // When updating a users game lastMatchId is updated to a much higher number
       if(userData.lastMatchId[0] > 25){
         graphFunctionName(null, userData, graphOptions, responder);
-      }
-      else {
+      } else {
         // Let client know that this user is new, attempt to re-request data
-        responder.send("Error: Specified user could not be found");
+        responder.send("User found, but no data found (Please wait)");
       }
     } else {
 
@@ -194,6 +199,71 @@ function analyzeChampionDaysGraph(err, gameData, userData, responder){
   // Send Names and Counts to client, so it can draw a pritty graph
   responder.send(championPieInfo);
 }
+
+/****
+    * Gets all games between two dates
+    * Groups by position played
+    * Passed data found to analyzer function
+    *
+****/
+function positionPieGraph(err, userData, graphOptions, responder){
+
+  var startDate = new Date(graphOptions.startDate);
+  var endDate = new Date(graphOptions.endDate);
+
+  gameModel.aggregate([
+    // Only use games from this user
+    { $match : { $and: [{ userId : userData._id},
+                      {dateTime: {$gt: startDate, $lt: endDate}}]
+                }
+    }, 
+    { $group : {
+
+      // Group by position
+      _id : { 
+        position : "$position"
+      },
+      totalGames : { $sum: 1}}
+    }
+
+  ], function(err,res){
+
+    if(err) console.log(err);
+
+    analyzePositionPieGraph(res, responder);
+  });
+}
+
+function analyzePositionPieGraph(data, responder){
+  var graphData = [];
+
+  // Convert data given to format for graphing
+  data.forEach(function(position){
+    var positionName = null;
+    var positionGames = position.totalGames;
+
+    if(position._id.position == 1){
+      positionName = "Top"; 
+    } else if(position._id.position == 2){
+      positionName = "Mid";
+    } else if(position._id.position == 3){
+      positionName = "Jungle";
+    } else if(position._id.position == 4){
+      positionName = "Bottom";
+    }
+
+    if(positionName !== null){
+      graphData.push({name: positionName, y: positionGames});
+    }
+  });
+
+  graphData.sort(function(a,b){return b.y - a.y});
+
+  responder.send(graphData);
+
+}
+
+
 
 /**
   *
@@ -488,6 +558,52 @@ function analyzeAllGraph(userData, gameData, graphOptions, responder){
   responder.send(graphInfo);
 
 }
+
+function yearGraph(err, userData, graphOptions, responder){
+
+
+  var startDate = new Date(graphOptions.year,0,0);
+  var endDate = new Date(graphOptions.year,11,31,23,59);
+
+  gameModel.aggregate([
+    // Only use games from this user
+    { $match : { $and: [{ userId : userData._id},
+                      {dateTime: {$gt: startDate, $lt: endDate}}]
+                }
+    }, 
+    { $group : {
+
+      // Group by month
+      _id : { 
+        month: { $month : "$dateTime" },
+        champion: "$champion"
+      },
+      totalSeconds : { $sum: "$duration"}}
+    },
+    { $group : {
+
+      // Group by month first
+      _id : "$_id.month",
+      champion : {
+        "$push": { 
+                "champion": "$_id.champion",
+                "count": "$totalSeconds"
+        },
+      },
+      totalSeconds : { $sum: "$totalSeconds"}}
+    }
+
+  ], function(err,res){
+
+    if(err) console.log(err);
+
+    // Send data found back to client
+    responder.send(res);
+    //console.log(util.inspect(res, false, null));
+  });
+
+}
+
 
 /**
   *
