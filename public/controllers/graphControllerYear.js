@@ -57,6 +57,7 @@ myApp.controller("yearChartCtrl", ['$location', '$scope', '$rootScope', '$http',
 
     // Initalize graph setting
     yearGraphService.inital();
+    championPieGraphService.inital();
     
   }
 
@@ -68,6 +69,11 @@ myApp.controller("yearChartCtrl", ['$location', '$scope', '$rootScope', '$http',
     var server = $rootScope.server;
 
     yearGraphService.update($http, year);
+
+    var fromDate = new Date(year, 0, 0);
+    var toDate = new Date(year, 11, 31);
+    
+    championPieGraphService.updatePositionGraph($http, fromDate, toDate);
 
   }
 
