@@ -15,7 +15,14 @@ myApp.factory('todayGraphService', function(){
           // Type of graph
           options: {
               chart: {
-                  type: 'spline'
+                  type: 'column',
+                  height: 300
+              },
+              plotOptions : {
+                column : {
+                  pointPadding: 0,
+                  groupPadding: 0.0
+                }
               }
           },
           xAxis: {
@@ -59,6 +66,15 @@ myApp.factory('todayGraphService', function(){
       *
     **/
     update: function ($http, fromDate, toDate, statService){
+
+      // Get first and last minute of day
+      var fromDate = new Date(fromDate.getFullYear(), 
+                              fromDate.getMonth(), 
+                              fromDate.getDate(), 0, 0, 0, 0);
+
+      var toDate = new Date(toDate.getFullYear(), 
+                            toDate.getMonth(), 
+                            toDate.getDate(), 23, 59, 59, 99);
 
       // Gets clients timezone offset
       var offset = new Date().getTimezoneOffset();
@@ -107,7 +123,7 @@ myApp.factory('todayGraphService', function(){
             },
 
             // Set color of line
-            color: '#94e2e4',
+            color: '#cd6066',
 
             // Marker is a circle not diamond plz
             marker: {
@@ -120,7 +136,7 @@ myApp.factory('todayGraphService', function(){
           $scope.todayChart.chartConfig.loading = false;
 
           // Update today stat now as depedant on today chart data
-          statService.getToday(customTodayData);
+          statService.getTotal(todayChartData);
         }
       }).
       error(function(response){
