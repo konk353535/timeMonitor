@@ -1,50 +1,105 @@
 myApp.factory('multiDayGraphService', function(){
   return {  
     /**
-      * initalMultiDayGraph() Initalizes setting for Week graph
+      * initalMultiDayGraph() Initalizes setting for line graph
       *
       *
       *
     **/
-  	inital: function (){
-  		
-      // Object to store all info for weekChart in one place
-      $scope.weekChart = {};
+  	inital: function (type){
+  	
+      if(type == "week"){
 
-      // week graph options
-      $scope.weekChart.chartConfig = {
-          options: {
-              chart: {
-                  type: 'spline'
-              }
-          },
-          xAxis: {
-                  type: 'datetime',
-                  title : {
-                    text: 'Date'
-                  },
-                  dateTimeLabelFormats : {
-                    day: "%a"
+        // Object to store all info for weekChart in one place
+        $scope.weekChart = {};
+
+        // week graph options
+        $scope.weekChart.chartConfig = {
+            options: {
+                chart: {
+                    type: 'column',
+                    height: 300
+                },
+                plotOptions : {
+                  column : {
+                    pointPadding: 0,
+                    groupPadding: 0.15
                   }
-          },
-          yAxis: {
-            title : {
-              text: 'Mins'
+                }
+            },
+            xAxis: {
+                    type: 'datetime',
+                    title : {
+                      text: 'Date'
+                    },
+                    dateTimeLabelFormats : {
+                      day: "%a"
+                    }
+            },
+            yAxis: {
+              title : {
+                text: 'Mins'
+              },
+
+              // Min y-value of 0 so no negative range (can't have -time)
+              min: 0
+            },
+            series: [{
+                data: []
+            }],
+            title: {
+                text: ''
             },
 
-            // Min y-value of 0 so no negative range (can't have -time)
-            min: 0
-          },
-          series: [{
-              data: []
-          }],
-          title: {
-              text: ''
-          },
+            // Loading true as we don't have data yet
+            loading: true
+        }
+      } else if(type == "month"){
 
-          // Loading true as we don't have data yet
-          loading: true
+        // Object to store all info for weekChart in one place
+        $scope.weekChart = {};
+
+        // week graph options
+        $scope.weekChart.chartConfig = {
+            options: {
+                chart: {
+                    type: 'column',
+                    height: 300
+                },
+                plotOptions : {
+                  column : {
+                    pointPadding: 0,
+                    groupPadding: 0.0
+                  }
+                }
+            },
+            xAxis: {
+                    type: 'datetime',
+                    title : {
+                      text: 'Date'
+                    }
+            },
+            yAxis: {
+              title : {
+                text: 'Mins'
+              },
+
+              // Min y-value of 0 so no negative range (can't have -time)
+              min: 0
+            },
+            series: [{
+                data: []
+            }],
+            title: {
+                text: ''
+            },
+
+            // Loading true as we don't have data yet
+            loading: true
+        }
+
       }
+
   	},
 
     /**
@@ -110,7 +165,7 @@ myApp.factory('multiDayGraphService', function(){
             data: graphInfo.data,
             
             // Set color of line
-            color: '#94e2e4',
+            color: '#cd6066',
 
             // Marker is a circle not diamond plz
             marker: {
