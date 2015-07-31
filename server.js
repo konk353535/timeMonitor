@@ -7,7 +7,7 @@ var app = express()
 var bodyParser = require('body-parser');
 
 // Define where to pull front end docs from
-app.use(express.static(__dirname + "/public"));
+app.use(express.static(__dirname + "/public",{maxAge: 72000*1000}));
 app.use(bodyParser.json());
 
 // Require Mongoose DB
@@ -39,10 +39,10 @@ var userCounter = require('./userCounter.js');
 
 var graphManager = require('./graphManager.js');
 
-
-var compareManager = require('./compareManager.js');
-
 app.get('/countUsers', function(req,res){
+
+	// Cache the result for 4 hours
+	res.setHeader('Cache-Control', 'public, max-age=3600000');
 
 	// Send to counter to send to client
 	userCounter.getCount(res);
@@ -75,27 +75,20 @@ app.post('/stat', function(req,res){
 	statManager.getStats(username, statOptions, res);
 })
 
-
-app.get('/', function (req, res) {	
-	res.send('Hello World');
-})
-
 app.get('/user/:sName/:serName/:timePeriod/:date', function(req, res){
 
-	if(req.params.timePeriod == "day"){
+	if(req.params.timePeriod == "day") {
 		res.sendFile(__dirname + '/public/userToday.html');
 	} else if(req.params.timePeriod == "week") {
 		res.sendFile(__dirname + '/public/userWeek.html');
-	} else if(req.params.timePeriod == "month"){
+	} else if(req.params.timePeriod == "month") {
 		res.sendFile(__dirname + '/public/userMonth.html');
+	} else if(req.params.timePeriod == "year") {
+		res.sendFile(__dirname + '/public/userYear.html');
 	} else {
 		res.sendFile(__dirname + '/public/user.html');
 	}
 
-})
-
-app.get('/compare', function(req, res){
-	res.sendFile(__dirname + '/public/compare.html');
 })
 
 app.post('/graph', function(req,res){
@@ -120,9 +113,9 @@ app.post('/newPlayer', function (req, res) {
 	userAddManager.addUser(username, server, offset, res);
 });
 
-app.listen(3000);
+app.listen(8080);
 
-console.log("Listening on port 3000");
+console.log("Listening on port 8080");
 
 /* Compare Code In Works 
 var baseUser = {
