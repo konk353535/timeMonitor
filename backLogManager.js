@@ -25,6 +25,45 @@ var request = require('request');
 // Converting to UTC
 var moment = require('moment-timezone');
 
+
+
+// Keeps a tally of how many users we are currently updating
+var updateNumber = 0;
+
+// Update User Games Functions
+var updateUser = function getUserToUpdate(){
+
+	// Only update if last update is completed
+	if(updateNumber <= 0){
+		
+		// Grab Users to update
+		userModel.find({$or : [{backLogged: false},{backLogged: null}], lastMatchId:{$ne:25}})
+		.limit(20)
+		.exec(function (err, userData) {
+
+			if (err) return console.error(err);
+			
+			if(userData.length > 0){
+				updateNumber = userData.length;
+				while(userData.length > 0){
+					var user = userData[0];
+					userData.splice(0, 1);
+					backLogUser(user._id);
+				}
+				userData = null;
+				user = null;
+			} else {
+				//console.log("Everyone is updated");
+			}
+
+		});
+	} else {
+		console.log("Can't update yet still - " + updateNumber);
+	}
+}
+
+
+
 // Check given user isn't updated
 var backLogUser = function verifyUser(userId){
 
@@ -33,6 +72,7 @@ var backLogUser = function verifyUser(userId){
   	if (err) console.log("Error in backLogManager - " + err);
   	
   	if(user && user.lastMatchId[0] !== 25 && user.backLogged === false){
+
   		// Send valid user to get earliestRecordedMatchId
   		getEarliestGame(user);
   	}
@@ -53,8 +93,8 @@ function getEarliestGame(user){
 		var summonerId = user.summonerId;
 		var server = user.server;
 
-		var indexFrom = 1500;
-		var indexTo = 1515;
+		var indexFrom = 0;
+		var indexTo = 15;
 
 		var errorCount = 0;
 
@@ -109,6 +149,10 @@ function getOldGames(user, oldestRecordedGame, summonerId, server, indexFrom, in
 			
 			if(errorCount >= 150){
 				// Don't Rerequest url
+				updateNumber -= 1;
+			} else if(!response || response.statusCode == 404){
+				// If the user can't be found, no point trying again
+				userBackLogged(user);
 			} else {
 				// Rerequest given url
 				getOldGames(user, oldestRecordedGame, summonerId, server, indexFrom, indexTo, errorCount+1);
@@ -138,8 +182,11 @@ function analyzeGameSet(user, gamesData, oldestRecordedGame){
 			var champion = participants.championId;
 			var dateCreated = game.matchCreation;
 
-			var position = timeline.lane;
-
+			if(timeline){
+				var position = timeline.lane;
+			} else {
+				var position = 0;
+			}
 			var isWin = stats.winner;
 
 			if(position == "TOP"){
@@ -198,10 +245,12 @@ function userBackLogged(user){
 		if(err) return handleError(err);
 
 		console.log(user.summonerName + " backlogged");
+		updateNumber -= 1;
 	});
 }
 
 // Functions that can be called outside this module
 module.exports = {
-  backLogUser: backLogUser
+  backLogUser: backLogUser,
+  updateUser: updateUser
 }
