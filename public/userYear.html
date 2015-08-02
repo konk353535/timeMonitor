@@ -103,6 +103,7 @@
 <script src="controllers/services/statsService.js"></script>
 <script src="controllers/graphControllerYear.js"></script>
 
+
 </head>
 <body style="background-color: #ededed; height: 100%;" 
       ng-controller="yearChartCtrl" id="chartApp">
@@ -126,6 +127,7 @@
       <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
         <ul class="nav navbar-nav">
           <li><a href="/" target="_self">Home</a></li>
+          <li><a href="user/theoddone/na/year/ThisYear" target="_self">TheOddOne</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <form class="navbar-form navbar-left" role="search">
@@ -197,7 +199,9 @@
         <h2 style="margin-top: 0px; margin-bottom: 10px;">
           Year: {{current.year}}
         </h2>
+
       </div>
+      
       <div class="col-md-6">
         <div class="input-group intput-group-lg">
         <span class="input-group-addon" id="sizing-addon1">
@@ -207,7 +211,14 @@
         </div>
       </div>
     </div>
-    <div class="row" >
+    <div class="row" style="text-align:center" ng-hide="player.backlogged">
+      
+      <div class="col-md-6" style="text-align:center;">
+          <small style="margin-top:10px"><em>Grabbing Old Ranked Games</em></small>
+          <progressbar value="player.blPercent" class="progress-striped active"><span style="color:white; white-space:nowrap; " >{{player.blPercent | number : 2}}%</span></progressbar>
+      </div>
+    </div>
+    <div class="row">
       <div class="col-md-12" style="text-align:center">
         <highchart id="chart3" config="yearChart.chartConfig" class="span10">
         </highchart>
@@ -245,11 +256,24 @@
         </h3>
         </div>
       </div>
+      
       <div class="col-md-6" style="text-align:center">
         <h2>Champions</h2>
         <highchart id="chart2" config="champChart.chartConfig" class="span10"></highchart>
       </div>
-    </div>
+
+      <!--
+      <div class="col-md-12" style="text-align:center">
+        <h2>Unplayed Champions {{current.year}}</h2>
+
+        <div class="col-md-3" ng-repeat="champion in unplayedChampions">
+          <ul class="list-group">
+            <li class="list-group-item">{{champion.name}}</li>
+          </ul>
+        </div>
+      </div>
+      -->
+      
   </div>
   </div>
   </div>
