@@ -31,13 +31,27 @@ var userAddManager = require("./userAddManager.js");
 // Stat manager for retrieving stats
 var statManager = require("./statManager.js");
 
-// Testing out championTotalManager
-var championTotals = require("./championTotalManager.js");
-
 // userCounter to get number of users
 var userCounter = require('./userCounter.js');
 
+// For graphing stuff
 var graphManager = require('./graphManager.js');
+
+// backLogManager for getting status of backlogging for users
+var backLogManager = require('./backLogManager.js');
+
+app.get('/backloggingStatus/:name/:server', function(req,res){
+
+	var username = req.params.name;
+	var server = req.params.server;
+
+	username = username.toLowerCase();
+	// Remove spaces
+	username = username.replace(/\s+/g, '');
+
+	backLogManager.checkBackloggedStatus(username, server, res);
+
+});
 
 app.get('/countUsers', function(req,res){
 
