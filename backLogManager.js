@@ -25,10 +25,46 @@ var request = require('request');
 // Converting to UTC
 var moment = require('moment-timezone');
 
-
-
 // Keeps a tally of how many users we are currently updating
 var updateNumber = 0;
+
+
+
+var checkBackloggedStatus = function checkBackloggedStatus(user, server, res){
+
+	// 1 Find user in db (if not find, res(error))
+	userModel.findOne({"summonerName": user, "server": server})
+	.exec(function (err, userData) {
+
+  	if (err) console.log("Error finding backlogged status - " + err);
+  	
+  	if(userData){
+	  	if(userData.backLogged === true){
+	  		res.send(true);
+	  	} else if(userData.backLogged === false) {
+	  		checkBackLoggedCompletion(userData,res);
+	  	}
+	}
+
+  	});
+
+}
+
+function checkBackLoggedCompletion(userData, res){
+	// 3 Get earliest known game and send back to user
+	gameModel.find({userId : userData._id})
+		.sort({matchId : 1})
+		.limit(1)
+		.exec(function(err,gameData){
+
+		if(err) console.log(err);
+
+		res.send(gameData);
+	});
+}
+
+
+
 
 // Update User Games Functions
 var updateUser = function getUserToUpdate(){
@@ -252,5 +288,6 @@ function userBackLogged(user){
 // Functions that can be called outside this module
 module.exports = {
   backLogUser: backLogUser,
-  updateUser: updateUser
+  updateUser: updateUser,
+  checkBackloggedStatus: checkBackloggedStatus
 }
