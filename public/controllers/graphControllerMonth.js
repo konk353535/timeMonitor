@@ -1,6 +1,6 @@
 
 // Access Controller for graph page
-myApp.controller("monthChartCtrl", ['$location', '$scope', '$rootScope', '$http', '$routeParams', 'utilityService' ,'statService', 'multiDayGraphService', 'championPieGraphService', function ($location, $normalScope, $rootScope, $http, $routeParams, utilityService, statService, multiDayGraphService, championPieGraphService) {
+myApp.controller("monthChartCtrl", ['$timeout','$location', '$scope', '$rootScope', '$http', '$routeParams', 'utilityService' ,'statService', 'multiDayGraphService', 'championPieGraphService', function ($timeout, $location, $normalScope, $rootScope, $http, $routeParams, utilityService, statService, multiDayGraphService, championPieGraphService) {
 
   // Only scope we want is the rootScope
 	$scope = $rootScope;
@@ -8,7 +8,10 @@ myApp.controller("monthChartCtrl", ['$location', '$scope', '$rootScope', '$http'
   $scope.errors = [];
 
   // Set default select value to oce
-  $scope.player = {server: "oce", name: ""};
+  $scope.player = {server: "oce", name: "", backlogged: true, blPercent: 0};
+
+  // Message for users that just finished backlogging
+  $rootScope.justBackloggedMessage = [];
 
   // Object so all our stats live in one place
 	$scope.stats = {};
@@ -138,11 +141,74 @@ myApp.controller("monthChartCtrl", ['$location', '$scope', '$rootScope', '$http'
           var lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0);
 
           updateAllGraphsAndStats(firstDay, lastDay);
+
+          // New user has been added, remove new user message
+          var newUserErrMessageIndex = $scope.errors.indexOf("Adding new user, please wait");
+
+          while(newUserErrMessageIndex > -1){
+            $scope.errors.splice(newUserErrMessageIndex, 1);
+            
+            var newUserErrMessageIndex = $scope.errors.indexOf("Adding new user, please wait");
+          }
         }
+
+        backLoggingStatus();
     }).
     error(function(response){
       console.log("An error has occured");
       $scope.errors.push(response);
+    });
+  }
+
+
+  function backLoggingStatus(){
+    
+    console.log("Backlogging");
+
+    // Check users backlogged status
+    $http.get('/backloggingStatus/' + $routeParams.username + '/' + 
+      $routeParams.server).success(function(response){
+
+        if(response === true){
+
+          // User is backlogged all good
+          $scope.player.backlogged = true;
+
+          if($scope.player.blPercent !== 0){
+            // This was just backlogged, replace with message about completion
+            $rootScope.justBackloggedMessage.push("We just finished backlogging all your ranked games, all ranked games since May 2014 are now in our database");
+
+            // Regraph (As we have alot of new data)
+            var d = new Date();
+            var firstDay = new Date(d.getFullYear(), d.getMonth(), 1);
+            var lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+            updateAllGraphsAndStats(firstDay, lastDay);
+          }
+
+        } else {
+          // User isn't backlogged
+          $scope.player.backlogged = false;
+
+          var oldestGameDate = new Date(response[0].dateTime);
+          var currentDate = new Date();
+          var goalDate = new Date(2014, 4, 0);
+          
+          var msInDay = 3600 * 1000 * 24;
+          var daysToDone = (currentDate - goalDate) / msInDay;
+          var daysToCurrentDate = (currentDate - oldestGameDate) / msInDay;
+        
+          var backloggedPercent = daysToCurrentDate / daysToDone * 100;
+
+          $scope.player.blPercent = backloggedPercent;
+
+          console.log($scope.player);
+
+          $timeout(function(){backLoggingStatus()}, 2500);
+
+        }
+
+
+
     });
   }
 
