@@ -33,8 +33,6 @@ myApp.controller("todayChartCtrl", ['$location', '$scope', '$rootScope', '$http'
       var fromDate = new Date($normalScope.demo.dtFrom);
       var toDate = new Date($normalScope.demo.dtFrom);
 
-      updateAllGraphsAndStats(fromDate, toDate);
-
       // Need to change the :date param in url to new date
       var dispDate = fromDate.getFullYear() + "-" +
                      (fromDate.getMonth()+1) + "-" + 

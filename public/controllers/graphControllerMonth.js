@@ -39,9 +39,6 @@ myApp.controller("monthChartCtrl", ['$timeout','$location', '$scope', '$rootScop
       $scope.fromDate = firstDay;
       $scope.toDate = lastDay;
 
-      // Req all graphs and stats
-      updateAllGraphsAndStats(firstDay, lastDay);
-
       // Need to change the :date param in url to new date
       var dispDate = firstDay.getFullYear() + "-" +
                      (firstDay.getMonth()+1) + "-" + 

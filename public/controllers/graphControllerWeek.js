@@ -1,4 +1,4 @@
-
+ 
 // Access Controller for graph page
 myApp.controller("weekChartCtrl", ['$location', '$scope', '$rootScope', '$http', '$routeParams', 'utilityService' ,'statService', 'multiDayGraphService', 'championPieGraphService', function ($location, $normalScope, $rootScope, $http, $routeParams, utilityService, statService, multiDayGraphService, championPieGraphService) {
 
@@ -34,8 +34,6 @@ myApp.controller("weekChartCtrl", ['$location', '$scope', '$rootScope', '$http',
       
       $scope.fromDate = fromDate;
       $scope.toDate = toDate;
-
-      updateAllGraphsAndStats(fromDate, toDate);
 
       // Need to change the :date param in url to new date
       var dispDate = fromDate.getFullYear() + "-" +
