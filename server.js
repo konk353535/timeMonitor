@@ -47,7 +47,6 @@ app.get('/backloggingStatus/:name/:server', function(req,res){
 
 	// To Lowercase
 	username = username.toLowerCase();
-
 	// Remove spaces
 	username = username.replace(/\s+/g, '');
 
