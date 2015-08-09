@@ -45,7 +45,9 @@ app.get('/backloggingStatus/:name/:server', function(req,res){
 	var username = req.params.name;
 	var server = req.params.server;
 
+	// To Lowercase
 	username = username.toLowerCase();
+
 	// Remove spaces
 	username = username.replace(/\s+/g, '');
 
@@ -128,18 +130,4 @@ app.post('/newPlayer', function (req, res) {
 });
 
 app.listen(8080);
-
 console.log("Listening on port 8080");
-
-/* Compare Code In Works 
-var baseUser = {
-	summonerName: "iyvy",
-	serverName: "oce"
-};
-
-var otherUsers = 
-[{summonerName: "jeffanator", server: "oce"},
-{summonerName: "omnarino", server: "oce"}];
-
-compareManager.compareGraph(baseUser, otherUsers);
-*/
